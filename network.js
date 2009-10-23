@@ -97,8 +97,6 @@ function drawHint(ctx, hint, x, y) {
 	ctx.font = "small sans-serif";
 	ctx.fillStyle = "black";
 	ctx.fillText(hint.message, x + 15, y + 80);
-	/* add the avatar */
-	//ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
 }
 
 /* Draw the black month bar at the top of the canvas */
@@ -161,24 +159,6 @@ function drawData(ctx, data, xoffset, yoffset) {
 		var y = 80 + 20 * val.space - yoffset - 10;
 		ctx.strokeStyle = branchColor[(val.space-1)%6];
 		ctx.lineWidth = 2;
-		/* draw the dot */
-		if (x > 80 && x < 940 && y > 20 && y < 620) {
-			ctx.beginPath();
-			ctx.fillStyle = branchColor[(val.space-1)%6];
-			if (val == drawDot) {
-				/* we are hovering a dot, draw it bigger
-				 * and add a hint */
-				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
-				ctx.fill();
-				drawHint(ctx, val, 200, 200);
-			} else {
-				/* only draw a small dot */
-				ctx.arc(x, y, 3, 0, (Math.PI * 2), false);
-				ctx.fill();
-			}
-			/* add the data to the array of dotsmouseover */
-			dotsMouseOver.push({"x":x, "y": y, "val": val});
-		}
 		/* for each dot, we ~may~ have to draw the line/arrow
 		 * to its parent. */
 		$.each(val.parents, function(j, parnt) {
@@ -194,18 +174,28 @@ function drawData(ctx, data, xoffset, yoffset) {
 				ctx.beginPath();
 				ctx.strokeStyle = branchColor[(val.space-1)%6];
 				ctx.moveTo(x - 5, y);
-				ctx.lineTo(xdest + 5, y);
+				ctx.lineTo(xdest + 6, y);
 				ctx.stroke();
 			} else if (parnt[2] > val.space) {
 				/* the parent is > than the current
  				 * this will be a merge arrow */
 				ctx.beginPath();
+				ctx.lineWidth = 2;
 				ctx.strokeStyle = branchColor[(parnt[2]-1)%6];
-				ctx.moveTo(xdest + 5, ydest);
-				ctx.lineTo(x - 10, ydest);
-				ctx.lineTo(x - 10, y + 12);
-				ctx.lineTo(x - 5, y + 5);
+				ctx.fillStyle = branchColor[(parnt[2]-1)%6];
+				ctx.moveTo(xdest + 6, ydest);
+				ctx.lineTo(x - 11, ydest);
+				ctx.lineTo(x - 11, y + 13);
+				ctx.lineTo(x - 9, y + 9);
 				ctx.stroke();
+				/* draw arrowhead */
+				ctx.beginPath();
+				ctx.lineWidth = 1;
+				ctx.moveTo(x - 5, y + 5);
+				ctx.lineTo(x - 13, y + 8);
+				ctx.lineTo(x - 7, y + 14);
+				ctx.lineTo(x - 5, y + 5);
+				ctx.fill();
 			} else {
 				/* the parent is < the current, this
 				 * will be a fork arrow */
@@ -215,19 +205,42 @@ function drawData(ctx, data, xoffset, yoffset) {
 				/* draw arrowhead */
 				ctx.lineWidth = 1;
 				ctx.moveTo(x - 5, y);
-				ctx.lineTo(x - 5 - 8, y - 2);
-				//ctx.moveTo(x - 5, y);
-				ctx.lineTo(x - 5 - 8, y + 2);
+				ctx.lineTo(x - 5 - 9, y - 3.5);
+				ctx.lineTo(x - 5 - 9, y + 3.5);
 				ctx.lineTo(x - 5, y);
 				ctx.fill();
 				/* draw lines */
+				ctx.beginPath();
 				ctx.lineWidth = 2;
 				ctx.moveTo(x - 5 - 8, y);
 				ctx.lineTo(xdest, y);
-				ctx.lineTo(xdest, ydest + 5);
+				ctx.lineTo(xdest, ydest + 6);
 				ctx.stroke();
 			}
 		});
+		/* draw the dot */
+		if (x > 80 && x < 940 && y > 20 && y < 620) {
+			ctx.beginPath();
+			if (val == drawDot) {
+				/* we are hovering a dot, draw it bigger
+				 * and add a hint */
+				ctx.fillStyle = "white";
+				ctx.arc(x, y, 6, 0, (Math.PI * 2), false);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.fillStyle = branchColor[(val.space-1)%6];
+				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
+				ctx.fill();
+				drawHint(ctx, val, 200, 200);
+			} else {
+				/* only draw a small dot */
+				ctx.fillStyle = branchColor[(val.space-1)%6];
+				ctx.arc(x, y, 3, 0, (Math.PI * 2), false);
+				ctx.fill();
+			}
+			/* add the data to the array of dotsmouseover */
+			dotsMouseOver.push({"x":x, "y": y, "val": val});
+		}
 	});
 }
 
