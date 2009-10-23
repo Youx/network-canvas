@@ -168,12 +168,12 @@ function drawData(ctx, data, xoffset, yoffset) {
 			if (val == drawDot) {
 				/* we are hovering a dot, draw it bigger
 				 * and add a hint */
-				ctx.arc(x, y, 5, 0, 360, false);
+				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
 				ctx.fill();
 				drawHint(ctx, val, 200, 200);
 			} else {
 				/* only draw a small dot */
-				ctx.arc(x, y, 3, 0, 360, false);
+				ctx.arc(x, y, 3, 0, (Math.PI * 2), false);
 				ctx.fill();
 			}
 			/* add the data to the array of dotsmouseover */
@@ -211,9 +211,20 @@ function drawData(ctx, data, xoffset, yoffset) {
 				 * will be a fork arrow */
 				ctx.beginPath();
 				ctx.strokeStyle = branchColor[(val.space-1)%6];
+				ctx.fillStyle = branchColor[(val.space-1)%6];
+				/* draw arrowhead */
+				ctx.lineWidth = 1;
 				ctx.moveTo(x - 5, y);
-				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, y);
-				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, 80 + 20 * parnt[2] - yoffset - 10 + 5);
+				ctx.lineTo(x - 5 - 8, y - 2);
+				//ctx.moveTo(x - 5, y);
+				ctx.lineTo(x - 5 - 8, y + 2);
+				ctx.lineTo(x - 5, y);
+				ctx.fill();
+				/* draw lines */
+				ctx.lineWidth = 2;
+				ctx.moveTo(x - 5 - 8, y);
+				ctx.lineTo(xdest, y);
+				ctx.lineTo(xdest, ydest + 5);
 				ctx.stroke();
 			}
 		});
