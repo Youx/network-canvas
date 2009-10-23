@@ -85,40 +85,41 @@ function drawData(ctx, data, xoffset, yoffset) {
 	$.each(data.commits, function(i, val) {
 		var x = 200 + 20 * val.time - xoffset - 10;
 		var y = 80 + 20 * val.space - yoffset - 10;
+		/* draw point */
+		ctx.strokeStyle = branchColor[(val.space-1)%6];
+		ctx.lineWidth = 2;
 		if (x > 80 && x < 940 && y > 20 && y < 620) {
 			ctx.beginPath();
 			ctx.fillStyle = branchColor[(val.space-1)%6];
-			ctx.strokeStyle = branchColor[(val.space-1)%6];
-			ctx.lineWidth = 2;
 			ctx.arc(x, y, 3, 0, 360, false);
 			ctx.fill();
-			$.each(val.parents, function(j, parnt) {
-				if (parnt[2] == val.space) {
-					/* draw line */
-					ctx.beginPath();
-					ctx.moveTo(x - 5, y);
-					ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10 + 5, y);
-					ctx.stroke();
-				} else if (parnt[2] > val.space) {
-					/* the parent is > than the current
- 					 * this will be a merge arrow */
-					ctx.beginPath();
-					ctx.strokeStyle = branchColor[(parnt[2]-1)%6];
-					ctx.moveTo(200 + 20 * parnt[1] - xoffset - 10 + 5, 80 + 20 * parnt[2] - yoffset - 10);
-					ctx.lineTo(x - 10, 80 + 20 * parnt[2] - yoffset - 10);
-					ctx.lineTo(x - 10, y + 12);
-					ctx.lineTo(x - 5, y + 5);
-					ctx.stroke();
-				} else {
-					/* fork arrow */
-					ctx.beginPath();
-					ctx.moveTo(x - 5, y);
-					ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, y);
-					ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, 80 + 20 * parnt[2] - yoffset - 10 + 5);
-					ctx.stroke();
-				}
-			});
 		}
+		$.each(val.parents, function(j, parnt) {
+			if (parnt[2] == val.space) {
+				/* draw line */
+				ctx.beginPath();
+				ctx.moveTo(x - 5, y);
+				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10 + 5, y);
+				ctx.stroke();
+			} else if (parnt[2] > val.space) {
+				/* the parent is > than the current
+ 				 * this will be a merge arrow */
+				ctx.beginPath();
+				ctx.strokeStyle = branchColor[(parnt[2]-1)%6];
+				ctx.moveTo(200 + 20 * parnt[1] - xoffset - 10 + 5, 80 + 20 * parnt[2] - yoffset - 10);
+				ctx.lineTo(x - 10, 80 + 20 * parnt[2] - yoffset - 10);
+				ctx.lineTo(x - 10, y + 12);
+				ctx.lineTo(x - 5, y + 5);
+				ctx.stroke();
+			} else {
+				/* fork arrow */
+				ctx.beginPath();
+				ctx.moveTo(x - 5, y);
+				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, y);
+				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, 80 + 20 * parnt[2] - yoffset - 10 + 5);
+				ctx.stroke();
+			}
+		});
 	});
 }
 
