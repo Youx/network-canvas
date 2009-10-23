@@ -16,3 +16,8 @@ This is currently alpha quality, NOT FOR USE. You've been warned.
 First, grab the code, put it in an apache folder, and try accessing index.html. (You will need a server because the data files are loaded through an AJAX request)
 
 This uses only stored data (`network_data` and `network_meta` files) taken from mojombo's jekyll project.
+
+Screenshot
+----------
+
+![Screenshot as of 23/10/2009](http://cloud.github.com/downloads/Youx/network-canvas/2009-10-23-185652_969x769_scrot.png)
