@@ -39,6 +39,7 @@ function draw(){
 	var canvas = document.getElementById('tutorial');
 	if (canvas.getContext){
 		var ctx = canvas.getContext('2d');
+		ctx.font = "small sans-serif";
 		/* draw the data points and arrows */
 		drawData(ctx, data, xoffset, yoffset);
 		/* draw the names on the left */
@@ -64,10 +65,16 @@ function drawHint(ctx, hint, x, y) {
 	/* Preload the avatar if it hasn't already been loaded */
 	if (!avatars[hint.gravatar]) {
 		avatars[hint.gravatar] = new Image();
-		avatars[hint.gravatar].src = "http://www.gravatar.com/avatar/"+hint.gravatar+"?s=64";
+		avatars[hint.gravatar].src = "http://www.gravatar.com/avatar/"+hint.gravatar+"?s=32";
+		avatars[hint.gravatar].onload = function() {
+			ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
+		};
+	} else {
+		ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
 	}
 	/* draw the smoothed rectangle */
 	ctx.beginPath();
+	ctx.strokeStyle = "black";
 	ctx.moveTo(x,y+5);
 	ctx.quadraticCurveTo(x, y, x+5, y);
 	ctx.lineTo(x + 395, y);
@@ -78,8 +85,20 @@ function drawHint(ctx, hint, x, y) {
 	ctx.quadraticCurveTo(x, y + 100, x, y + 95);
 	ctx.lineTo(x, y + 5);
 	ctx.stroke();
+	/* Add name */
+	ctx.fillStyle = "black";
+	ctx.font = "medium sans-serif";
+	ctx.fillText(hint.author, x + 15 + 32 + 15, y + 35);
+	/* Add commit hash */
+	ctx.font = "small sans-serif";
+	ctx.fillStyle = "grey";
+	ctx.fillText(hint.id, x + 15, y + 65);
+	/* Add commit message */
+	ctx.font = "small sans-serif";
+	ctx.fillStyle = "black";
+	ctx.fillText(hint.message, x + 15, y + 80);
 	/* add the avatar */
-	ctx.drawImage(avatars[hint.gravatar], x + 20, y + 20);
+	//ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
 }
 
 /* Draw the black month bar at the top of the canvas */
@@ -173,6 +192,7 @@ function drawData(ctx, data, xoffset, yoffset) {
 				/* the dots are on the same line,
 				 * we only draw a line */
 				ctx.beginPath();
+				ctx.strokeStyle = branchColor[(val.space-1)%6];
 				ctx.moveTo(x - 5, y);
 				ctx.lineTo(xdest + 5, y);
 				ctx.stroke();
@@ -190,6 +210,7 @@ function drawData(ctx, data, xoffset, yoffset) {
 				/* the parent is < the current, this
 				 * will be a fork arrow */
 				ctx.beginPath();
+				ctx.strokeStyle = branchColor[(val.space-1)%6];
 				ctx.moveTo(x - 5, y);
 				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, y);
 				ctx.lineTo(200 + 20 * parnt[1] - xoffset - 10, 80 + 20 * parnt[2] - yoffset - 10 + 5);
