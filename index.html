@@ -11,11 +11,11 @@
   <body>
     <script type="text/javascript">
       var jsondata, jsonmeta;
-      $.getJSON("network_meta", function(data) {
-        meta = data;
+      $.getJSON("network_meta", function(data1) {
+        meta = data1;
 	parseMeta(meta);
-        $.getJSON("network_data", function(data) {
-          jsondata = data;
+        $.getJSON("network_data", function(data2) {
+          data = data2;
           draw();
         });
       });
