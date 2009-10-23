@@ -280,6 +280,12 @@ function mouseMove(e) {
 			}
 		});
 		if (drawDot != found) {
+			/* Change the mouse so that we know we are on a link */
+			if (found == false) {
+				document.getElementById('tutorial').style.cursor = 'default';
+			} else {
+				document.getElementById('tutorial').style.cursor = 'hand';
+			}
 			drawDot = found;
 			draw();
 		}
