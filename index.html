@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <title>Canvas tutorial</title>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js"></script>
+
+    <script type="text/javascript" src="network.js"></script>
+    <style type="text/css">
+      canvas { border: 1px solid black; }
+    </style>
+  </head>
+  <body>
+    <script type="text/javascript">
+      var jsondata, jsonmeta;
+      $.getJSON("network_meta", function(data) {
+        meta = data;
+	parseMeta(meta);
+        $.getJSON("network_data", function(data) {
+          jsondata = data;
+          draw();
+        });
+      });
+    </script>
+    <canvas id="tutorial" width="920" height="600"
+            onmouseup="mouseUp(event);" onmousedown="mouseDown(event);"
+            onmousemove="mouseMove(event);" onmouseout="mouseOut(event);"></canvas>
+  </body>
+</html>
+
