@@ -18,22 +18,23 @@ var maxy = -600 + yoffset*2 + 100; /* the +100 is just a margin in case we need 
  * We also put the HEADS in an associative array */
 function parseMeta(meta) {
 	/* each user can take 20px * X in height */
-	$.each(meta.blocks, function(i, val) {
-		maxy += 20 * val.count;
-	});
+	for (var i = 0 ; i < meta.blocks.length ; i++) {
+		maxy += 20 * meta.blocks[i].count;
+	}
 	/* each column takes 20px */
 	maxx += (meta.dates.length * 20);
 	/* parse the heads */
-	$.each(meta.users, function(i, val) {
-		/* */
+	for (var i = 0 ; i < meta.users.length ; i++) {
+		var val = meta.users[i];
 		if(!heads[val.name])
 			heads[val.name] = {};
-		$.each(val.heads, function(j, head) {
+		for (var j = 0 ; j < val.heads.length ; j++) {
+			var head = val.heads[j];
 			if (!heads[val.name][head.id])
 				heads[val.name][head.id] = []
 			heads[val.name][head.id].push(head.name);
-		});
-	});
+		};
+	};
 }
 
 /* The main draw function, it load the context from the canvas
@@ -47,7 +48,7 @@ function draw(){
 		return;
 
 	/* retreive the canvas */
-	var canvas = document.getElementById('tutorial');
+	var canvas = $('#network-canvas').get(0);
 	if (canvas.getContext){
 		var ctx = canvas.getContext('2d');
 		ctx.font = "small sans-serif";
@@ -292,9 +293,10 @@ function drawDataHeads(ctx, data, xoffset, yoffset) {
 		var y = 80 + 20 * val.space - yoffset - 10;
 		var yhead = y + 5;
 		if (heads[val.login] && heads[val.login][val.id]) {
-			$.each(heads[val.login][val.id], function(i, label) {
+			for (var j = 0 ; j < heads[val.login][val.id].length ; j++) {
+				var label = heads[val.login][val.id][j];
 				yhead += drawHead(ctx, label, x, yhead) + 5;
-			});
+			}
 		}
 	}
 }
@@ -450,21 +452,23 @@ function mouseMove(e) {
 		draw();
 	} else {
 		var found = false;
-		$.each(dotsMouseOver, function(i, val) {
+		for (var i = 0 ; i < dotsMouseOver.length ; i++) {
+			var val = dotsMouseOver[i];
 			if (found == false) {
 				if (Math.abs(val.x - x) <= 5) {
 					if (Math.abs(val.y - y) <= 5) {
 						found = val.val;
+						break;
 					}
 				}
 			}
-		});
+		}
 		if (drawDot != found) {
 			/* Change the mouse so that we know we are on a link */
 			if (found == false) {
-				document.getElementById('tutorial').style.cursor = 'default';
+				$('#network-canvas').get(0).style.cursor = 'default';
 			} else {
-				document.getElementById('tutorial').style.cursor = 'hand';
+				$('#network-canvas').get(0).style.cursor = 'hand';
 			}
 			drawDot = found;
 			draw();
