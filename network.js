@@ -11,7 +11,7 @@ var data;		/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e
 var heads = {};
 
 var maxx = -920 + xoffset*2;
-var maxy = -600 + yoffset*2;
+var maxy = -600 + yoffset*2 + 100; /* the +100 is just a margin in case we need to display HEADS */
 
 /* Compute the max width and height of the data inside the
  * canvas so we can block scrolling when going too far
@@ -133,13 +133,18 @@ function drawNames(ctx, meta, yoffset) {
 	var colors = ["rgb(235,235,255)", "rgb(224,224,255)"];
 	var y = 80;
 	ctx.save();
+	ctx.fillStyle = colors[0];
+	ctx.fillRect(0, 40, 100, 600 - 40)
 	for (var i = 0 ; i < meta.blocks.length ; i++) {
-		if ( (y >= 40 && y <= 600) || (y + val.count * 20 >= 40 && y + val.count * 20 <= 600)) {
-			val = meta.blocks[i];
-			ctx.fillStyle = colors[i%2];
+		val = meta.blocks[i];
+		ydest = y + val.count * 20;
+		if ( (y - yoffset >= 40 && y - yoffset <= 600) || (ydest - yoffset >= 40 && ydest - yoffset <= 600) ) {
+			if (i%2 == 1) {
+				ctx.fillStyle = colors[1];
+				ctx.fillRect(0, y - yoffset, 100, val.count * 20);
+			}
 			ctx.strokeStyle = "rgb(222,222,222)";
 			ctx.lineWidth = "1";
-			ctx.fillRect(0, y - yoffset, 100, val.count * 20);
 			ctx.beginPath();
 			ctx.moveTo(100, y - yoffset + 0.5);
 			ctx.lineTo(0.5, y - yoffset + 0.5);
@@ -159,14 +164,22 @@ function drawBlocks(ctx, meta, yoffset) {
 	var colors = ["rgb(245,245,255)", "rgb(240,240,255)"];
 	var y = 80;
 	ctx.save();
-	$.each(meta.blocks, function(i, val) {
-			ctx.fillStyle = colors[i%2];
-			ctx.strokeStyle = "rgb(222,222,222)";
+	ctx.fillStyle = colors[0];
+	ctx.fillRect(100, 40, 920 - 100, 600 - 40)
+	for (var i = 0 ; i < meta.blocks.length ; i++) {
+		val = meta.blocks[i];
+		ydest = y + val.count * 20;
+		if ( (y - yoffset >= 40 && y - yoffset <= 600) || (ydest - yoffset >= 40 && ydest - yoffset <= 600) ) {
+			if (i%2 == 1) {
+				ctx.fillStyle = colors[1];
+				ctx.fillRect(100, y - yoffset, 820, val.count * 20);
+			}
 			ctx.lineWidth = "1";
-			ctx.fillRect(100, y - yoffset, 820, val.count * 20);
+			ctx.strokeStyle = "rgb(222,222,222)";
 			ctx.strokeRect(0.5, y - yoffset + 0.5, 919.5, val.count * 20);
-			y += val.count * 20;
-	});
+		}
+		y += val.count * 20;
+	}
 	ctx.restore();
 }
 
@@ -231,27 +244,80 @@ function drawHead(ctx, label, x, y) {
 	return size + 5 + 15; /* 5 = bottom border, 15 = top border */
 }
 
-/* Draw the dots and arrows / links in the canvas.
- * We may also draw a hint if a dot is hovered */
-function drawData(ctx, data, xoffset, yoffset) {
-	/* we iterate of those colors when drawing branches... later we'll include more */
-	var branchColor = ["black", "red", "blue", "green", "magenta", "cyan"];
+/* we iterate of those colors when drawing branches... later we'll include more */
+var branchColor = ["black", "red", "blue", "green", "magenta", "cyan"];
 
-	/* draw points */
+function drawDataDots(ctx, data, xoffset, yoffset) {
 	dotsMouseOver = [];
-	$.each(data.commits, function(i, val) {
+	/* Draw all the dots */
+	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
+		var val = data.commits[i];
+		if (!val)
+			continue;
+		var x = 200 + 20 * val.time - xoffset - 10;
+		var y = 80 + 20 * val.space - yoffset - 10;
+		/* draw the dot */
+		if (x > 80 && x < 940 && y > 20 && y < 620) {
+			ctx.beginPath();
+			if (val == drawDot) {
+				/* we are hovering a dot, draw it bigger
+				 * and add a hint */
+				ctx.fillStyle = "white";
+				ctx.arc(x, y, 6, 0, (Math.PI * 2), false);
+				ctx.fill();
+				ctx.beginPath();
+				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
+				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
+				ctx.fill();
+				drawHint(ctx, val, 200, 200);
+			} else {
+				/* only draw a small dot */
+				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
+				ctx.arc(x, y, 3, 0, (Math.PI * 2), false);
+				ctx.fill();
+			}
+			/* add the data to the array of dotsmouseover */
+			dotsMouseOver.push({"x":x, "y": y, "val": val});
+		}
+	}
+}
+
+function drawDataHeads(ctx, data, xoffset, yoffset) {
+	/* Draw all the HEADS */
+	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
+		var val = data.commits[i];
+		if (!val)
+			continue;
+		var x = 200 + 20 * val.time - xoffset - 10;
+		var y = 80 + 20 * val.space - yoffset - 10;
+		var yhead = y + 5;
+		if (heads[val.login] && heads[val.login][val.id]) {
+			$.each(heads[val.login][val.id], function(i, label) {
+				yhead += drawHead(ctx, label, x, yhead) + 5;
+			});
+		}
+	}
+}
+
+function drawDataLinks(ctx, data, xoffset, yoffset) {
+	/* draw points */
+	var displaycount = 0;
+	//for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
+	for (var i = data.commits.length - 1; i >= parseInt((xoffset - 100)/20) ; i--) {
+		var val = data.commits[i];
 		var x = 200 + 20 * val.time - xoffset - 10;
 		var y = 80 + 20 * val.space - yoffset - 10;
 		ctx.strokeStyle = branchColor[(val.space-1)%branchColor.length];
 		ctx.lineWidth = 2;
 		/* for each dot, we ~may~ have to draw the line/arrow
 		 * to its parent. */
-		$.each(val.parents, function(j, parnt) {
+		for (var j = 0 ; j < val.parents.length ; j++) {
+			var parnt = val.parents[j];
 			var xdest = 200 + 20 * parnt[1] - xoffset - 10;
 			var ydest = 80 + 20 * parnt[2] - yoffset - 10;
 			/* Check if the line can be seen */
 			if (!needToDrawLine(x, y, xdest, ydest, 100, 40, 920, 600))
-				return;
+				continue;
 			/* here we can draw different type of lines/arrows */
 			if (parnt[2] == val.space) {
 				/* the dots are on the same line,
@@ -302,53 +368,15 @@ function drawData(ctx, data, xoffset, yoffset) {
 				ctx.lineTo(xdest, ydest + 5);
 				ctx.stroke();
 			}
-		});
-	});
-	/* Draw all the dots */
-	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-		var val = data.commits[i];
-		if (!val)
-			continue;
-		var x = 200 + 20 * val.time - xoffset - 10;
-		var y = 80 + 20 * val.space - yoffset - 10;
-		/* draw the dot */
-		if (x > 80 && x < 940 && y > 20 && y < 620) {
-			ctx.beginPath();
-			if (val == drawDot) {
-				/* we are hovering a dot, draw it bigger
-				 * and add a hint */
-				ctx.fillStyle = "white";
-				ctx.arc(x, y, 6, 0, (Math.PI * 2), false);
-				ctx.fill();
-				ctx.beginPath();
-				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
-				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
-				ctx.fill();
-				drawHint(ctx, val, 200, 200);
-			} else {
-				/* only draw a small dot */
-				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
-				ctx.arc(x, y, 3, 0, (Math.PI * 2), false);
-				ctx.fill();
-			}
-			/* add the data to the array of dotsmouseover */
-			dotsMouseOver.push({"x":x, "y": y, "val": val});
 		}
 	}
-	/* Draw all the HEADS */
-	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-		var val = data.commits[i];
-		if (!val)
-			continue;
-		var x = 200 + 20 * val.time - xoffset - 10;
-		var y = 80 + 20 * val.space - yoffset - 10;
-		var yhead = y + 5;
-		if (heads[val.login] && heads[val.login][val.id]) {
-			$.each(heads[val.login][val.id], function(i, label) {
-				yhead += drawHead(ctx, label, x, yhead) + 5;
-			});
-		}
-	}
+}
+/* Draw the dots and arrows / links in the canvas.
+ * We may also draw a hint if a dot is hovered */
+function drawData(ctx, data, xoffset, yoffset) {
+	drawDataLinks(ctx, data, xoffset, yoffset);
+	drawDataDots(ctx, data, xoffset, yoffset);
+	drawDataHeads(ctx, data, xoffset, yoffset);
 }
 
 /* Calculate if we will need to draw an arrow (two segments)
