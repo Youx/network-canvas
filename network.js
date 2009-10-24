@@ -2,8 +2,6 @@
 /* used to transform a month number to a 3 character string */
 var valtomonth = {"01": "Jan", "02": "Feb", "03": "Mar", "04": "Apr", "05": "May", "06": "Jun",
 	"07": "Jul", "08": "Aug", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"};
-/* we iterate of those colors when drawing branches... later we'll include more */
-var branchColor = ["black", "red", "blue", "green", "magenta", "cyan"];
 var xoffset = 100;	/* the left column with names is 100 px wide */
 var yoffset = 40;	/* the two month/day bars at the top take 40px */
 var dotsMouseOver = [];	/* here we store the dots we can hover */
@@ -135,7 +133,9 @@ function drawNames(ctx, meta, yoffset) {
 	var colors = ["rgb(235,235,255)", "rgb(224,224,255)"];
 	var y = 80;
 	ctx.save();
-	$.each(meta.blocks, function(i, val) {
+	for (var i = 0 ; i < meta.blocks.length ; i++) {
+		if ( (y >= 40 && y <= 600) || (y + val.count * 20 >= 40 && y + val.count * 20 <= 600)) {
+			val = meta.blocks[i];
 			ctx.fillStyle = colors[i%2];
 			ctx.strokeStyle = "rgb(222,222,222)";
 			ctx.lineWidth = "1";
@@ -148,8 +148,9 @@ function drawNames(ctx, meta, yoffset) {
 			ctx.stroke();
 			ctx.fillStyle = "black";
 			ctx.fillText(val.name, 5, (y - yoffset) + (10 * val.count) + 5);
-			y += val.count * 20;
-	});
+		}
+		y += val.count * 20;
+	}
 	ctx.restore();
 }
 
@@ -172,9 +173,18 @@ function drawBlocks(ctx, meta, yoffset) {
 /* Draw the dates in the two bars at the top of the canvas
  * (month in the first bar and day in the second bar */
 function drawDates(ctx, meta, xoffset) {
-	var olddate = [1970,1,1];
+	var olddate;
 	var newdate;
-	$.each(meta.dates, function(i, val) {
+	var min = parseInt((xoffset - 100)/20);
+	if (min <= 0)
+		olddate = [1970,1,1];
+	else
+		olddate = meta.dates[min - 1].split("-");
+
+	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
+		var val = meta.dates[i];
+		if (!val)
+			continue;
 		newdate = val.split("-");
 		var x = 200 + 20 * i - xoffset;
 		/* Check if we need to display a new month */
@@ -188,7 +198,7 @@ function drawDates(ctx, meta, xoffset) {
 			ctx.fillText(newdate[2], x, 35)
 		}
 		olddate = newdate;
-	})
+	}
 }
 
 /* Draw a little branch head label under a dot */
@@ -224,12 +234,15 @@ function drawHead(ctx, label, x, y) {
 /* Draw the dots and arrows / links in the canvas.
  * We may also draw a hint if a dot is hovered */
 function drawData(ctx, data, xoffset, yoffset) {
+	/* we iterate of those colors when drawing branches... later we'll include more */
+	var branchColor = ["black", "red", "blue", "green", "magenta", "cyan"];
+
 	/* draw points */
 	dotsMouseOver = [];
 	$.each(data.commits, function(i, val) {
 		var x = 200 + 20 * val.time - xoffset - 10;
 		var y = 80 + 20 * val.space - yoffset - 10;
-		ctx.strokeStyle = branchColor[(val.space-1)%6];
+		ctx.strokeStyle = branchColor[(val.space-1)%branchColor.length];
 		ctx.lineWidth = 2;
 		/* for each dot, we ~may~ have to draw the line/arrow
 		 * to its parent. */
@@ -244,7 +257,7 @@ function drawData(ctx, data, xoffset, yoffset) {
 				/* the dots are on the same line,
 				 * we only draw a line */
 				ctx.beginPath();
-				ctx.strokeStyle = branchColor[(val.space-1)%6];
+				ctx.strokeStyle = branchColor[(val.space-1)%branchColor.length];
 				ctx.moveTo(x - 5, y);
 				ctx.lineTo(xdest + 5, y);
 				ctx.stroke();
@@ -253,8 +266,8 @@ function drawData(ctx, data, xoffset, yoffset) {
  				 * this will be a merge arrow */
 				ctx.beginPath();
 				ctx.lineWidth = 2;
-				ctx.strokeStyle = branchColor[(parnt[2]-1)%6];
-				ctx.fillStyle = branchColor[(parnt[2]-1)%6];
+				ctx.strokeStyle = branchColor[(parnt[2]-1)%branchColor.length];
+				ctx.fillStyle = branchColor[(parnt[2]-1)%branchColor.length];
 				ctx.moveTo(xdest + 5, ydest);
 				ctx.lineTo(x - 11, ydest);
 				ctx.lineTo(x - 11, y + 13);
@@ -272,8 +285,8 @@ function drawData(ctx, data, xoffset, yoffset) {
 				/* the parent is < the current, this
 				 * will be a fork arrow */
 				ctx.beginPath();
-				ctx.strokeStyle = branchColor[(val.space-1)%6];
-				ctx.fillStyle = branchColor[(val.space-1)%6];
+				ctx.strokeStyle = branchColor[(val.space-1)%branchColor.length];
+				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
 				/* draw arrowhead */
 				ctx.lineWidth = 1;
 				ctx.moveTo(x - 5, y);
@@ -292,7 +305,10 @@ function drawData(ctx, data, xoffset, yoffset) {
 		});
 	});
 	/* Draw all the dots */
-	$.each(data.commits, function(i, val) {
+	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
+		var val = data.commits[i];
+		if (!val)
+			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
 		var y = 80 + 20 * val.space - yoffset - 10;
 		/* draw the dot */
@@ -305,22 +321,25 @@ function drawData(ctx, data, xoffset, yoffset) {
 				ctx.arc(x, y, 6, 0, (Math.PI * 2), false);
 				ctx.fill();
 				ctx.beginPath();
-				ctx.fillStyle = branchColor[(val.space-1)%6];
+				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
 				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
 				ctx.fill();
 				drawHint(ctx, val, 200, 200);
 			} else {
 				/* only draw a small dot */
-				ctx.fillStyle = branchColor[(val.space-1)%6];
+				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
 				ctx.arc(x, y, 3, 0, (Math.PI * 2), false);
 				ctx.fill();
 			}
 			/* add the data to the array of dotsmouseover */
 			dotsMouseOver.push({"x":x, "y": y, "val": val});
 		}
-	});
+	}
 	/* Draw all the HEADS */
-	$.each(data.commits, function(i, val) {
+	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
+		var val = data.commits[i];
+		if (!val)
+			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
 		var y = 80 + 20 * val.space - yoffset - 10;
 		var yhead = y + 5;
@@ -329,7 +348,7 @@ function drawData(ctx, data, xoffset, yoffset) {
 				yhead += drawHead(ctx, label, x, yhead) + 5;
 			});
 		}
-	});
+	}
 }
 
 /* Calculate if we will need to draw an arrow (two segments)
