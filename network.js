@@ -10,12 +10,14 @@ var dotsMouseOver = [];	/* here we store the dots we can hover */
 var avatars = {};	/* we store images loaded from gravatars in there */
 var meta;		/* the metadata loaded from 'network_meta' file */
 var data;		/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
+var heads = {};
 
 var maxx = -920 + xoffset*2;
 var maxy = -600 + yoffset*2;
 
 /* Compute the max width and height of the data inside the
- * canvas so we can block scrolling when going too far */
+ * canvas so we can block scrolling when going too far
+ * We also put the HEADS in an associative array */
 function parseMeta(meta) {
 	/* each user can take 20px * X in height */
 	$.each(meta.blocks, function(i, val) {
@@ -23,6 +25,17 @@ function parseMeta(meta) {
 	});
 	/* each column takes 20px */
 	maxx += (meta.dates.length * 20);
+	/* parse the heads */
+	$.each(meta.users, function(i, val) {
+		/* */
+		if(!heads[val.name])
+			heads[val.name] = {};
+		$.each(val.heads, function(j, head) {
+			if (!heads[val.name][head.id])
+				heads[val.name][head.id] = []
+			heads[val.name][head.id].push(head.name);
+		});
+	});
 }
 
 /* The main draw function, it load the context from the canvas
@@ -146,6 +159,36 @@ function drawDates(ctx, meta, xoffset) {
 	})
 }
 
+/* Draw a little branch head label under a dot */
+function drawHead(ctx, label, x, y) {
+	ctx.save();
+	ctx.font = "10px monospace"
+	var size = ctx.measureText(label).width;
+	ctx.beginPath();
+	ctx.fillStyle = "black";
+	ctx.globalAlpha = 0.8;
+	ctx.moveTo(x, y);
+	ctx.lineTo(x - 4, y + 10);
+	ctx.quadraticCurveTo(x - 8, y + 10, x - 8, y + 15);
+	ctx.lineTo(x - 8, y + 15 + size);
+	ctx.quadraticCurveTo(x - 8, y + 15 + size + 5, x - 4, y + 15 + size + 5);
+	ctx.lineTo(x + 4, y + 15 + size + 5);
+	ctx.quadraticCurveTo(x + 8, y + 15 + size + 5, x + 8, y + 15 + size);
+	ctx.lineTo(x + 8, y + 15);
+	ctx.quadraticCurveTo(x + 8, y + 10, x + 4, y + 10);
+	ctx.lineTo(x, y);
+	ctx.fill();
+	/* print the text */
+	ctx.globalAlpha = 1.0;
+	ctx.fillStyle = "white";
+	ctx.textBaseline = "middle";
+	ctx.rotate(Math.PI / 2);
+	ctx.fillText(label, y + 15 , - x);
+	ctx.rotate(- Math.PI / 2);
+	ctx.restore();
+	return size + 5 + 15; /* 5 = bottom border, 15 = top border */
+}
+
 /* Draw the dots and arrows / links in the canvas.
  * We may also draw a hint if a dot is hovered */
 function drawData(ctx, data, xoffset, yoffset) {
@@ -240,6 +283,13 @@ function drawData(ctx, data, xoffset, yoffset) {
 			}
 			/* add the data to the array of dotsmouseover */
 			dotsMouseOver.push({"x":x, "y": y, "val": val});
+		}
+		/* We draw the head(s) */
+		var yhead = y + 5;
+		if (heads[val.login] && heads[val.login][val.id]) {
+			$.each(heads[val.login][val.id], function(i, label) {
+				yhead += drawHead(ctx, label, x, yhead) + 5;
+			});
 		}
 	});
 }
