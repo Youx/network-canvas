@@ -219,7 +219,7 @@ function drawData(ctx, data, xoffset, yoffset) {
 				ctx.beginPath();
 				ctx.strokeStyle = branchColor[(val.space-1)%6];
 				ctx.moveTo(x - 5, y);
-				ctx.lineTo(xdest + 6, y);
+				ctx.lineTo(xdest + 5, y);
 				ctx.stroke();
 			} else if (parnt[2] > val.space) {
 				/* the parent is > than the current
@@ -228,7 +228,7 @@ function drawData(ctx, data, xoffset, yoffset) {
 				ctx.lineWidth = 2;
 				ctx.strokeStyle = branchColor[(parnt[2]-1)%6];
 				ctx.fillStyle = branchColor[(parnt[2]-1)%6];
-				ctx.moveTo(xdest + 6, ydest);
+				ctx.moveTo(xdest + 5, ydest);
 				ctx.lineTo(x - 11, ydest);
 				ctx.lineTo(x - 11, y + 13);
 				ctx.lineTo(x - 9, y + 9);
@@ -259,10 +259,15 @@ function drawData(ctx, data, xoffset, yoffset) {
 				ctx.lineWidth = 2;
 				ctx.moveTo(x - 5 - 8, y);
 				ctx.lineTo(xdest, y);
-				ctx.lineTo(xdest, ydest + 6);
+				ctx.lineTo(xdest, ydest + 5);
 				ctx.stroke();
 			}
 		});
+	});
+	/* Draw all the dots */
+	$.each(data.commits, function(i, val) {
+		var x = 200 + 20 * val.time - xoffset - 10;
+		var y = 80 + 20 * val.space - yoffset - 10;
 		/* draw the dot */
 		if (x > 80 && x < 940 && y > 20 && y < 620) {
 			ctx.beginPath();
@@ -286,7 +291,11 @@ function drawData(ctx, data, xoffset, yoffset) {
 			/* add the data to the array of dotsmouseover */
 			dotsMouseOver.push({"x":x, "y": y, "val": val});
 		}
-		/* We draw the head(s) */
+	});
+	/* Draw all the HEADS */
+	$.each(data.commits, function(i, val) {
+		var x = 200 + 20 * val.time - xoffset - 10;
+		var y = 80 + 20 * val.space - yoffset - 10;
 		var yhead = y + 5;
 		if (heads[val.login] && heads[val.login][val.id]) {
 			$.each(heads[val.login][val.id], function(i, label) {
