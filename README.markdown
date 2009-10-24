@@ -20,4 +20,4 @@ This uses only stored data (`network_data` and `network_meta` files) taken from 
 Screenshot
 ----------
 
-![Screenshot as of 23/10/2009](http://cloud.github.com/downloads/Youx/network-canvas/2009-10-23-233405_945x813_scrot.png)
+![Screenshot as of 23/10/2009](http://cloud.github.com/downloads/Youx/network-canvas/network-canvas.png)

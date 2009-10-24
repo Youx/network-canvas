@@ -53,6 +53,7 @@ function draw(){
 	if (canvas.getContext){
 		var ctx = canvas.getContext('2d');
 		ctx.font = "small sans-serif";
+		drawBlocks(ctx, meta, yoffset);
 		/* draw the data points and arrows */
 		drawData(ctx, data, xoffset, yoffset);
 		/* draw the names on the left */
@@ -75,6 +76,22 @@ function draw(){
  * It's basically a rectangle with smooth corners
  * a gravatar image + name + hash of the commit + comment */
 function drawHint(ctx, hint, x, y) {
+	/* draw the smoothed rectangle */
+	ctx.beginPath();
+	ctx.strokeStyle = "black";
+	ctx.fillStyle = "white";
+	ctx.lineWidth = "2";
+	ctx.moveTo(x,y+5);
+	ctx.quadraticCurveTo(x, y, x+5, y);
+	ctx.lineTo(x + 395, y);
+	ctx.quadraticCurveTo(x + 400, y, x + 400, y + 5);
+	ctx.lineTo(x + 400, y + 95);
+	ctx.quadraticCurveTo(x + 400, y + 100, x + 395, y + 100);
+	ctx.lineTo(x + 5, y + 100);
+	ctx.quadraticCurveTo(x, y + 100, x, y + 95);
+	ctx.lineTo(x, y + 5);
+	ctx.fill();
+	ctx.stroke();
 	/* Preload the avatar if it hasn't already been loaded */
 	if (!avatars[hint.gravatar]) {
 		avatars[hint.gravatar] = new Image();
@@ -86,19 +103,6 @@ function drawHint(ctx, hint, x, y) {
 	} else {
 		ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
 	}
-	/* draw the smoothed rectangle */
-	ctx.beginPath();
-	ctx.strokeStyle = "black";
-	ctx.moveTo(x,y+5);
-	ctx.quadraticCurveTo(x, y, x+5, y);
-	ctx.lineTo(x + 395, y);
-	ctx.quadraticCurveTo(x + 400, y, x + 400, y + 5);
-	ctx.lineTo(x + 400, y + 95);
-	ctx.quadraticCurveTo(x + 400, y + 100, x + 395, y + 100);
-	ctx.lineTo(x + 5, y + 100);
-	ctx.quadraticCurveTo(x, y + 100, x, y + 95);
-	ctx.lineTo(x, y + 5);
-	ctx.stroke();
 	/* Add name */
 	ctx.fillStyle = "black";
 	ctx.font = "medium sans-serif";
@@ -128,15 +132,41 @@ function drawDayBar(ctx, meta) {
 
 /* Draw the names of each repository owner in the left column */
 function drawNames(ctx, meta, yoffset) {
-	var colors = ["rgb(235,235,255)", "rgb(224,224,255)"]
+	var colors = ["rgb(235,235,255)", "rgb(224,224,255)"];
 	var y = 80;
+	ctx.save();
 	$.each(meta.blocks, function(i, val) {
 			ctx.fillStyle = colors[i%2];
+			ctx.strokeStyle = "rgb(222,222,222)";
+			ctx.lineWidth = "1";
 			ctx.fillRect(0, y - yoffset, 100, val.count * 20);
+			ctx.beginPath();
+			ctx.moveTo(100, y - yoffset + 0.5);
+			ctx.lineTo(0.5, y - yoffset + 0.5);
+			ctx.lineTo(0.5, y - yoffset + 0.5 + val.count * 20);
+			ctx.lineTo(100, y - yoffset + 0.5 + val.count * 20);
+			ctx.stroke();
 			ctx.fillStyle = "black";
 			ctx.fillText(val.name, 5, (y - yoffset) + (10 * val.count) + 5);
 			y += val.count * 20;
 	});
+	ctx.restore();
+}
+
+/* Draw the to the right of each name in the right column */
+function drawBlocks(ctx, meta, yoffset) {
+	var colors = ["rgb(245,245,255)", "rgb(240,240,255)"];
+	var y = 80;
+	ctx.save();
+	$.each(meta.blocks, function(i, val) {
+			ctx.fillStyle = colors[i%2];
+			ctx.strokeStyle = "rgb(222,222,222)";
+			ctx.lineWidth = "1";
+			ctx.fillRect(100, y - yoffset, 820, val.count * 20);
+			ctx.strokeRect(0.5, y - yoffset + 0.5, 919.5, val.count * 20);
+			y += val.count * 20;
+	});
+	ctx.restore();
 }
 
 /* Draw the dates in the two bars at the top of the canvas
@@ -194,9 +224,6 @@ function drawHead(ctx, label, x, y) {
 /* Draw the dots and arrows / links in the canvas.
  * We may also draw a hint if a dot is hovered */
 function drawData(ctx, data, xoffset, yoffset) {
-	/* erase everything */
-	ctx.fillStyle = "white";
-	ctx.fillRect(100, 40, 920 - 100, 600 - 40);
 	/* draw points */
 	dotsMouseOver = [];
 	$.each(data.commits, function(i, val) {
