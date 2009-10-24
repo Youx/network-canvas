@@ -80,7 +80,8 @@ function drawHint(ctx, hint, x, y) {
 		avatars[hint.gravatar] = new Image();
 		avatars[hint.gravatar].src = "http://www.gravatar.com/avatar/"+hint.gravatar+"?s=32";
 		avatars[hint.gravatar].onload = function() {
-			ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
+			if (hint == drawDot)
+				ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
 		};
 	} else {
 		ctx.drawImage(avatars[hint.gravatar], x + 15, y + 15);
@@ -110,6 +111,7 @@ function drawHint(ctx, hint, x, y) {
 	ctx.font = "small sans-serif";
 	ctx.fillStyle = "black";
 	ctx.fillText(hint.message, x + 15, y + 80);
+	done = 1;
 }
 
 /* Draw the black month bar at the top of the canvas */
