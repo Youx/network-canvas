@@ -152,7 +152,7 @@ function drawNames(ctx, meta, yoffset) {
 			ctx.lineTo(100, y - yoffset + 0.5 + val.count * 20);
 			ctx.stroke();
 			ctx.fillStyle = "black";
-			ctx.fillText(val.name, 5, (y - yoffset) + (10 * val.count) + 5);
+			ctx.fillText(val.name, 5, (y - yoffset) + (10 * val.count) + 5, 90);
 		}
 		y += val.count * 20;
 	}
