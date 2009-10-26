@@ -15,11 +15,11 @@ var maxy = -600 + yoffset*2 + 100; /* the +100 is just a margin in case we need 
 
 
 function loadData() {
-	$.getJSON("network_meta", function(data1) {
+	$.getJSON("network_meta.php", function(data1) {
 		meta = data1;
 		parseMeta(meta);
 		xoffset = 100 + meta.focus * 20;
-		$.getJSON("network_data", function(data2) {
+		$.getJSON("network_data_chunk.php?nethash="+meta.nethash, function(data2) {
 			parseData(data2);
 			draw();
 		});
@@ -62,8 +62,8 @@ function getCommit(data, i) {
 	/* if there is no */
 	if (!data[i] && !loading && i < meta.dates.length) {
 		loading = true;
-		var start = Math.max(i - 199, 0);
-		$.getJSON("network_data_chunk.php?start="+start, function(data2) {
+		var start = Math.max(i - 100, 0);
+		$.getJSON("network_data_chunk.php?nethash="+meta.nethash+"&start="+start+'&end='+(start+100), function(data2) {
 			parseData(data2);
 			loading = false;
 			draw();
