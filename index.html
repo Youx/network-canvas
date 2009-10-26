@@ -7,14 +7,7 @@
   </head>
   <body>
     <script type="text/javascript">
-      $.getJSON("network_meta", function(data1) {
-        meta = data1;
-	parseMeta(meta);
-        $.getJSON("network_data", function(data2) {
-          data = data2;
-          draw();
-        });
-      });
+	loadData();
     </script>
     <canvas id="network-canvas" width="920" height="600"
             onmouseup="mouseUp(event);" onmousedown="mouseDown(event);"

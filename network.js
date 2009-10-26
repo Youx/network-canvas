@@ -7,11 +7,23 @@ var yoffset = 40;	/* the two month/day bars at the top take 40px */
 var dotsMouseOver = [];	/* here we store the dots we can hover */
 var avatars = {};	/* we store images loaded from gravatars in there */
 var meta;		/* the metadata loaded from 'network_meta' file */
-var data;		/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
+var data = [];		/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
 var heads = {};
 
 var maxx = -920 + xoffset*2;
 var maxy = -600 + yoffset*2 + 100; /* the +100 is just a margin in case we need to display HEADS */
+
+
+function loadData() {
+	$.getJSON("network_meta", function(data1) {
+		meta = data1;
+		parseMeta(meta);
+		$.getJSON("network_data", function(data2) {
+			parseData(data2);
+			draw();
+		});
+	});
+}
 
 /* Compute the max width and height of the data inside the
  * canvas so we can block scrolling when going too far
@@ -35,6 +47,13 @@ function parseMeta(meta) {
 			heads[val.name][head.id].push(head.name);
 		};
 	};
+}
+
+function parseData(d) {
+	for (i = 0 ; i < d.commits.length ; i++) {
+		var commit = d.commits[i];
+		data[commit.time] = commit;
+	}
 }
 
 /* The main draw function, it load the context from the canvas
@@ -252,7 +271,7 @@ function drawDataDots(ctx, data, xoffset, yoffset) {
 	dotsMouseOver = [];
 	/* Draw all the dots */
 	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-		var val = data.commits[i];
+		var val = data[i];
 		if (!val)
 			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
@@ -286,7 +305,7 @@ function drawDataDots(ctx, data, xoffset, yoffset) {
 function drawDataHeads(ctx, data, xoffset, yoffset) {
 	/* Draw all the HEADS */
 	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-		var val = data.commits[i];
+		var val = data[i];
 		if (!val)
 			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
@@ -305,8 +324,10 @@ function drawDataLinks(ctx, data, xoffset, yoffset) {
 	/* draw points */
 	var displaycount = 0;
 	//for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-	for (var i = data.commits.length - 1; i >= parseInt((xoffset - 100)/20) ; i--) {
-		var val = data.commits[i];
+	for (var i = data.length - 1; i >= parseInt((xoffset - 100)/20) ; i--) {
+		var val = data[i];
+		if (!val)
+			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
 		var y = 80 + 20 * val.space - yoffset - 10;
 		ctx.strokeStyle = branchColor[(val.space-1)%branchColor.length];
