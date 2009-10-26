@@ -281,7 +281,7 @@ function drawHead(ctx, label, x, y) {
 }
 
 /* we iterate of those colors when drawing branches... later we'll include more */
-var branchColor = ["black", "red", "blue", "green", "magenta", "cyan"];
+var branchColor = ["black", "red", "blue", "lawngreen", "magenta", "yellow", "orange", "cyan", "hotpink", "peru"];
 
 function drawDataDots(ctx, data, xoffset, yoffset) {
 	dotsMouseOver = [];
