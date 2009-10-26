@@ -103,6 +103,8 @@ function draw(){
 		ctx.fillRect(0,0,100,20);
 		ctx.fillStyle = "rgb(64,64,64)";
 		ctx.fillRect(0,20,100,20);
+		if (drawDot)
+			drawHint(ctx, drawDot, 200, 200);
 	}
 }
 
@@ -305,7 +307,6 @@ function drawDataDots(ctx, data, xoffset, yoffset) {
 				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
 				ctx.arc(x, y, 5, 0, (Math.PI * 2), false);
 				ctx.fill();
-				drawHint(ctx, val, 200, 200);
 			} else {
 				/* only draw a small dot */
 				ctx.fillStyle = branchColor[(val.space-1)%branchColor.length];
