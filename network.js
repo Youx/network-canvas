@@ -18,6 +18,7 @@ function loadData() {
 	$.getJSON("network_meta", function(data1) {
 		meta = data1;
 		parseMeta(meta);
+		xoffset = 100 + meta.focus * 20;
 		$.getJSON("network_data", function(data2) {
 			parseData(data2);
 			draw();
@@ -54,6 +55,21 @@ function parseData(d) {
 		var commit = d.commits[i];
 		data[commit.time] = commit;
 	}
+}
+
+var loading = false;
+function getCommit(data, i) {
+	/* if there is no */
+	if (!data[i] && !loading && i < meta.dates.length) {
+		loading = true;
+		var start = Math.max(i - 199, 0);
+		$.getJSON("network_data_chunk.php?start="+start, function(data2) {
+			parseData(data2);
+			loading = false;
+			draw();
+		});
+	}
+	return data[i];
 }
 
 /* The main draw function, it load the context from the canvas
@@ -271,7 +287,7 @@ function drawDataDots(ctx, data, xoffset, yoffset) {
 	dotsMouseOver = [];
 	/* Draw all the dots */
 	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-		var val = data[i];
+		var val = getCommit(data, i);
 		if (!val)
 			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
@@ -305,7 +321,7 @@ function drawDataDots(ctx, data, xoffset, yoffset) {
 function drawDataHeads(ctx, data, xoffset, yoffset) {
 	/* Draw all the HEADS */
 	for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
-		var val = data[i];
+		var val = getCommit(data, i);
 		if (!val)
 			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
@@ -325,7 +341,7 @@ function drawDataLinks(ctx, data, xoffset, yoffset) {
 	var displaycount = 0;
 	//for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
 	for (var i = data.length - 1; i >= parseInt((xoffset - 100)/20) ; i--) {
-		var val = data[i];
+		var val = getCommit(data, i);
 		if (!val)
 			continue;
 		var x = 200 + 20 * val.time - xoffset - 10;
