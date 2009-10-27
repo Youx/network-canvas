@@ -24,6 +24,7 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 	this.loading = false;
 	/* we iterate of those colors when drawing branches... later we'll include more */
 	this.branchColor = ["black", "red", "blue", "lawngreen", "magenta", "yellow", "orange", "cyan", "hotpink", "peru"];
+	this.usersBySpace = [];
 
 	/* Initialize mouse handler */
 	this.mouse = new NetworkCanvas.Mouse(this);
@@ -40,6 +41,9 @@ NetworkCanvas.prototype = {
 		/* each user can take 20px * X in height */
 		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
 			this.maxy += 20 * this.meta.blocks[i].count;
+			for (var j = 0 ; j < this.meta.blocks[i].count ; j++) {
+				this.usersBySpace[this.meta.blocks[i].start + j] = this.meta.blocks[i].name;
+			}
 		}
 		/* each column takes 20px */
 		this.maxx = 100 + (this.meta.dates.length * 20);
@@ -77,7 +81,7 @@ NetworkCanvas.prototype = {
 	getCommit: function(i) {
 		var ths = this;
 		/* if there is no */
-		if (!this.data[i] && !this.loading && i < this.meta.dates.length) {
+		if (!this.data[i] && !this.loading && i < this.meta.dates.length && i >= 0) {
 			this.loading = true;
 			var start = Math.max(i - this.names_width, 0);
 			$.getJSON("network_data_chunk.php?nethash="+ths.meta.nethash+"&start="+start+'&end='+(start+100), function(d) {
@@ -301,7 +305,7 @@ NetworkCanvas.prototype = {
 			var val = this.getCommit(i);
 			if (!val)
 				continue;
-			var x = (this.names_width * 2) + 20 * val.time - this.xoffset - 10;
+			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
 			var y = 80 + 20 * val.space - this.yoffset - 10;
 			/* draw the dot */
 			if (x > this.names_width - 20 && x < this.width + 20 && y > 20 && y < this.height + 20) {
@@ -333,12 +337,12 @@ NetworkCanvas.prototype = {
 			var val = this.getCommit(i);
 			if (!val)
 				continue;
-			var x = (this.names_width * 2) + 20 * val.time - this.xoffset - 10;
+			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
 			var y = 80 + 20 * val.space - this.yoffset - 10;
 			var yhead = y + 5;
-			if (this.heads[val.login] && this.heads[val.login][val.id]) {
-				for (var j = 0 ; j < this.heads[val.login][val.id].length ; j++) {
-					var label = this.heads[val.login][val.id][j];
+			if (this.heads[this.usersBySpace[val.space - 1]] && this.heads[this.usersBySpace[val.space - 1]][val.id]) {
+				for (var j = 0 ; j < this.heads[this.usersBySpace[val.space - 1]][val.id].length ; j++) {
+					var label = this.heads[this.usersBySpace[val.space - 1]][val.id][j];
 					yhead += this.drawHead(ctx, label, x, yhead) + 5;
 				}
 			}
@@ -351,7 +355,7 @@ NetworkCanvas.prototype = {
 			var val = this.getCommit(i);
 			if (!val)
 				continue;
-			var x = (this.names_width * 2) + 20 * val.time - this.xoffset - 10;
+			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
 			var y = 80 + 20 * val.space - this.yoffset - 10;
 			ctx.strokeStyle = this.branchColor[(val.space-1)%this.branchColor.length];
 			ctx.lineWidth = 2;
@@ -359,7 +363,7 @@ NetworkCanvas.prototype = {
 			 * to its parent. */
 			for (var j = 0 ; j < val.parents.length ; j++) {
 				var parnt = val.parents[j];
-				var xdest = (this.names_width * 2) + 20 * parnt[1] - this.xoffset - 10;
+				var xdest = (this.names_width * 2) + (20 * parnt[1]) - this.xoffset + 10;
 				var ydest = 80 + 20 * parnt[2] - this.yoffset - 10;
 				/* Check if the line can be seen */
 				if (!this.needToDrawLine(x, y, xdest, ydest))
@@ -489,7 +493,7 @@ NetworkCanvas.Mouse = function(c) {
 			/* limit left <-> right scrolling */
 			parnt.canvas.xoffset -= dx;
 			if (parnt.canvas.xoffset < parnt.canvas.names_width)
-				parnt.canvas.xoffset = names_width;
+				parnt.canvas.xoffset = parnt.canvas.names_width;
 			if (parnt.canvas.xoffset > parnt.canvas.maxx)
 				parnt.canvas.xoffset = parnt.canvas.maxx;
 			/* limit up <-> down scrolling */
