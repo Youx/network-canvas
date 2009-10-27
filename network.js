@@ -1,9 +1,12 @@
 
 
-NetworkCanvas = function(canvasid, height, width, names_width) {
+NetworkCanvas = function(canvasid, width, height, names_width) {
 	this.canvas = $('#'+canvasid).get(0);
 	this.height = height || 600;
 	this.width = width || 920;
+	this.canvas.width = this.width;
+	this.canvas.height = this.height;
+
 	this.names_width = names_width || 100;
 	/* more stuff */
 	this.xoffset = this.names_width;/* the left column with names is 100 px wide */
@@ -39,7 +42,7 @@ NetworkCanvas.prototype = {
 			this.maxy += 20 * this.meta.blocks[i].count;
 		}
 		/* each column takes 20px */
-		this.maxx += (this.meta.dates.length * 20);
+		this.maxx = 100 + (this.meta.dates.length * 20);
 		/* parse the heads */
 		for (var i = 0 ; i < this.meta.users.length ; i++) {
 			var val = this.meta.users[i];
@@ -58,7 +61,7 @@ NetworkCanvas.prototype = {
 		$.getJSON("network_meta.php", function(data1) {
 			ths.meta = data1;
 			ths.parseMeta();
-			ths.xoffset = 100 + ths.meta.focus * 20;
+			ths.xoffset = ths.names_width + ths.meta.focus * 20;
 			$.getJSON("network_data_chunk.php?nethash="+ths.meta.nethash, function(data2) {
 				ths.parseData(data2);
 				ths.draw();
@@ -116,7 +119,7 @@ NetworkCanvas.prototype = {
 			ctx.fillStyle = "rgb(64,64,64)";
 			ctx.fillRect(0,20,this.names_width,20);
 			if (this.drawDot)
-				this.drawHint(ctx, this.drawDot, 200, 200);
+				this.drawHint(ctx, this.drawDot, this.names_width + 100, 200);
 		}
 	},
 	/* Draw a 'hint' when a dot is mouse-hovered
@@ -211,7 +214,7 @@ NetworkCanvas.prototype = {
 		var y = 80;
 		ctx.save();
 		ctx.fillStyle = colors[0];
-		ctx.fillRect(100, 40, 920 - 100, 600 - 40)
+		ctx.fillRect(this.names_width, 40, this.width - this.names_width, this.height - 40)
 		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
 			var val = this.meta.blocks[i];
 			var ydest = y + val.count * 20;
@@ -237,7 +240,7 @@ NetworkCanvas.prototype = {
 			"07": "Jul", "08": "Aug", "09": "Sep", "10": "Oct", "11": "Nov", "12": "Dec"};
 		var olddate;
 		var newdate;
-		var min = parseInt((this.xoffset - 100)/20);
+		var min = parseInt((this.xoffset - this.names_width)/20);
 		if (min <= 0)
 			olddate = [1970,1,1];
 		else
@@ -248,7 +251,7 @@ NetworkCanvas.prototype = {
 			if (!val)
 				continue;
 			newdate = val.split("-");
-			var x = 200 + 20 * i - this.xoffset;
+			var x = (2 * this.names_width) + 20 * i - this.xoffset;
 			/* Check if we need to display a new month */
 			if (newdate[0] != olddate[0] || newdate[1] != olddate[1]) {
 				ctx.fillStyle = "white";
@@ -294,7 +297,7 @@ NetworkCanvas.prototype = {
 	drawDataDots: function(ctx) {
 		this.dotsMouseOver = [];
 		/* Draw all the dots */
-		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width)/20 + 50) ; i++) {
+		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width + this.width)/20) ; i++) {
 			var val = this.getCommit(i);
 			if (!val)
 				continue;
@@ -344,7 +347,6 @@ NetworkCanvas.prototype = {
 	drawDataLinks: function(ctx) {
 		/* draw points */
 		var displaycount = 0;
-		//for (var i = parseInt((xoffset - 100)/20) ; i <= parseInt((xoffset - 100)/20 + 50) ; i++) {
 		for (var i = this.data.length - 1; i >= parseInt((this.xoffset - this.names_width)/20) ; i--) {
 			var val = this.getCommit(i);
 			if (!val)
@@ -492,10 +494,10 @@ NetworkCanvas.Mouse = function(c) {
 				parnt.canvas.xoffset = parnt.canvas.maxx;
 			/* limit up <-> down scrolling */
 			parnt.canvas.yoffset -= dy;
-			if (parnt.canvas.yoffset < 40)
-				parnt.canvas.yoffset = 40;
 			if (parnt.canvas.yoffset > parnt.canvas.maxy)
 				parnt.canvas.yoffset = parnt.canvas.maxy;
+			if (parnt.canvas.yoffset < 40)
+				parnt.canvas.yoffset = 40;
 
 			parnt.lastPoint.x = x;
 			parnt.lastPoint.y = y;
