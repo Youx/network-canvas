@@ -329,7 +329,7 @@ NetworkCanvas.prototype = {
 	},
 	drawDataHeads: function(ctx) {
 		/* Draw all the HEADS */
-		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width)/20 + 50) ; i++) {
+		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width + this.width)/20) ; i++) {
 			var val = this.getCommit(i);
 			if (!val)
 				continue;
