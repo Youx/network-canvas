@@ -13,7 +13,8 @@ var heads = {};
 var maxx = -920 + xoffset*2;
 var maxy = -600 + yoffset*2 + 100; /* the +100 is just a margin in case we need to display HEADS */
 
-
+/* Initialize the canvas and load the meta
+ * and first data chunk, then draw */
 function loadData() {
 	$.getJSON("network_meta.php", function(data1) {
 		meta = data1;
@@ -433,11 +434,6 @@ function needToDrawLine(xorig, yorig, xdest, ydest, xmin, ymin, xmax, ymax) {
 		return false;
 	/* both dots are righter than the canvas, no need to draw */
 	if (yorig > ymax && ydest > ymax)
-		return false;
-	/* those two are a bit trickier, but work */
-	if ( (xorig < xmin || xorig > xmax) && (ydest < ymin || ydest > ymax) )
-		return false;
-	if ( (xdest < xmin || xdest > xmax) && (yorig < ymin || yorig > ymax) )
 		return false;
 	/* if we are here, we have to draw */
 	return true;
