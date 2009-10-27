@@ -8,6 +8,8 @@ network-canvas is a reimplementation of github's network graph using HTML5 canva
 
 AFAIK, Canvas is supported by chrome, firefox 3+, opera and safari, so unless you are using IE or an old version of these browsers you shouldn't have any problem.
 
+Note that the original network flash file is 110kB large. The network.js file is only 19kB! Event better, it can be shrinked to less than 3kB by using YUI and gzip compression.
+
 Live example
 ------------
 
@@ -16,13 +18,13 @@ Try it here, it uses mojombo/eventmachine as a sample project : [example](http:/
 How to use it
 -------------
 
-This is currently alpha quality, NOT FOR USE. You've been warned.
+This is currently beta quality, NOT FOR USE. You've been warned.
 
 First, grab the code, put it in an apache folder, and try accessing index.html.
 
 Since we can't do AJAX requests to external servers (that would be cross site scripting, considered by browsers as an attack vector), we have to use a php script to proxy the request to retrieve the data chunks from github.
 
-The stored data used (`network_data` and `network_meta` files) is taken from mojombo's jekyll project, as is dynamically loaded data.
+The data used is streamed from mojombo's eventmachine project on github, though you can change that in config.php
 
 Screenshot
 ----------
