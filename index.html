@@ -5,13 +5,8 @@
 
     <script type="text/javascript" src="network.js"></script>
   </head>
-  <body>
-    <script type="text/javascript">
-	loadData();
-    </script>
-    <canvas id="network-canvas" width="920" height="600"
-            onmouseup="mouseUp(event);" onmousedown="mouseDown(event);"
-            onmousemove="mouseMove(event);" onmouseout="mouseOut(event);"></canvas>
+  <body onload="new NetworkCanvas('network-canvas');">
+    <canvas id="network-canvas" width="920" height="600"></canvas>
   </body>
 </html>
 
