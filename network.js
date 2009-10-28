@@ -180,7 +180,7 @@ NetworkCanvas.prototype = {
 		ctx.font = "small sans-serif";
 		ctx.fillStyle = "black";
 		var txtlen = ctx.measureTextLines(hint.message, 400 - 15 - 15);
-		var maxy = 80 + txtlen * 15 + 5;
+		var maxy = 70 + txtlen * 15 + 5;
 		ctx.beginPath();
 		ctx.strokeStyle = "black";
 		ctx.fillStyle = "white";
@@ -200,9 +200,10 @@ NetworkCanvas.prototype = {
 		if (!this.avatars[hint.gravatar]) {
 			this.avatars[hint.gravatar] = new Image();
 			this.avatars[hint.gravatar].src = "http://www.gravatar.com/avatar/"+hint.gravatar+"?s=32";
+			var ths = this;
 			this.avatars[hint.gravatar].onload = function() {
-				if (hint == this.drawDot)
-					ctx.drawImage(this.avatars[hint.gravatar], x + 15, y + 15);
+				if (hint == ths.drawDot)
+					ctx.drawImage(ths.avatars[hint.gravatar], x + 15, y + 15);
 			};
 		} else {
 			ctx.drawImage(this.avatars[hint.gravatar], x + 15, y + 15);
@@ -218,7 +219,7 @@ NetworkCanvas.prototype = {
 		/* Add commit message */
 		ctx.font = "small sans-serif";
 		ctx.fillStyle = "black";
-		ctx.fillTextMultiLine(hint.message, x + 15, y + 80, 400 - 15 - 15);
+		ctx.fillTextMultiLine(hint.message, x + 15, y + 70, 400 - 15 - 15);
 		//done = 1;
 	},
 	/* Draw the black month bar at the top of the canvas */
