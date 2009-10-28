@@ -1,4 +1,50 @@
+/* This function returns the number one lines we need to use to
+ * write text over a length < maxwidth. It is only completely
+ * correct when using a monotype font but should be approximate
+ * enough for most uses. Use a margin just in case */
+CanvasRenderingContext2D.prototype.measureTextLines = function(str, maxwidth) {
+	var pixlen = this.measureText(str).width;
+	if (pixlen < maxwidth)
+		return 1;
+	return str.splitLine(parseInt(maxwidth * str.length / pixlen))[0];
+};
 
+/* This function draws text in a multiline way over over a
+ * length < maxwidth. It is only completely correct when
+ * using a monotype font but should be approximate enough
+ * for most uses. Use a margin just in case */
+CanvasRenderingContext2D.prototype.fillTextMultiLine = function(str, x, y, maxWidth, lineHeight) {
+	lineHeight = lineHeight || 12; /* default spacing = 12 */
+	var pixlen = this.measureText(str).width;
+	var strings = str.splitLine(parseInt(maxWidth * str.length / pixlen))[1];
+	var string_ar = strings.split("\n");
+	for(var i = 0 ; i < string_ar.length ; i++) {
+		y += lineHeight;
+		this.fillText(string_ar[i], x, y);
+	}
+};
+
+// Line Splitter Function
+// copyright Stephen Chapman, 19th April 2006
+// you may copy this code but please keep the copyright notice as well
+String.prototype.splitLine = function(n) {
+	var b = '';
+	var s = this;
+	var linecount = 1;
+	while (s.length > n) {
+		var c = s.substring(0,n);
+		var d = c.lastIndexOf(' ');
+		var e =c.lastIndexOf('\n');
+		if (e != -1)
+			d = e;
+		if (d == -1)
+			d = n;
+		b += c.substring(0,d) + '\n';
+		linecount += 1;
+		s = s.substring(d+1);
+	}
+	return [linecount, b+s];
+}
 
 NetworkCanvas = function(canvasid, width, height, names_width) {
 	this.canvas = $('#'+canvasid).get(0);
@@ -131,18 +177,22 @@ NetworkCanvas.prototype = {
 	 * a gravatar image + name + hash of the commit + comment */
 	drawHint: function(ctx, hint, x, y) {
 		/* draw the smoothed rectangle */
+		ctx.font = "small sans-serif";
+		ctx.fillStyle = "black";
+		var txtlen = ctx.measureTextLines(hint.message, 400 - 15 - 15);
+		var maxy = 80 + txtlen * 15 + 5;
 		ctx.beginPath();
 		ctx.strokeStyle = "black";
 		ctx.fillStyle = "white";
 		ctx.lineWidth = "2";
 		ctx.moveTo(x,y+5);
 		ctx.quadraticCurveTo(x, y, x+5, y);
-		ctx.lineTo(x + 395, y);
+		ctx.lineTo(x + maxy - 5, y);
 		ctx.quadraticCurveTo(x + 400, y, x + 400, y + 5);
-		ctx.lineTo(x + 400, y + 95);
-		ctx.quadraticCurveTo(x + 400, y + 100, x + 395, y + 100);
-		ctx.lineTo(x + 5, y + 100);
-		ctx.quadraticCurveTo(x, y + 100, x, y + 95);
+		ctx.lineTo(x + 400, y + maxy - 5);
+		ctx.quadraticCurveTo(x + 400, y + maxy, x + 395, y + maxy);
+		ctx.lineTo(x + 5, y + maxy);
+		ctx.quadraticCurveTo(x, y + maxy, x, y + maxy - 5);
 		ctx.lineTo(x, y + 5);
 		ctx.fill();
 		ctx.stroke();
@@ -168,7 +218,7 @@ NetworkCanvas.prototype = {
 		/* Add commit message */
 		ctx.font = "small sans-serif";
 		ctx.fillStyle = "black";
-		ctx.fillText(hint.message, x + 15, y + 80);
+		ctx.fillTextMultiLine(hint.message, x + 15, y + 80, 400 - 15 - 15);
 		//done = 1;
 	},
 	/* Draw the black month bar at the top of the canvas */
