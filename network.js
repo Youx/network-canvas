@@ -187,7 +187,7 @@ NetworkCanvas.prototype = {
 		ctx.lineWidth = "2";
 		ctx.moveTo(x,y+5);
 		ctx.quadraticCurveTo(x, y, x+5, y);
-		ctx.lineTo(x + maxy - 5, y);
+		ctx.lineTo(x + 400 - 5, y);
 		ctx.quadraticCurveTo(x + 400, y, x + 400, y + 5);
 		ctx.lineTo(x + 400, y + maxy - 5);
 		ctx.quadraticCurveTo(x + 400, y + maxy, x + 395, y + maxy);
