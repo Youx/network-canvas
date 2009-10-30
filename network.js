@@ -169,18 +169,38 @@ NetworkCanvas.prototype = {
 			ctx.fillStyle = "rgb(64,64,64)";
 			ctx.fillRect(0,20,this.names_width,20);
 			if (this.drawDot)
-				this.drawHint(ctx, this.drawDot, this.names_width + 100, 200);
+				this.drawHint(ctx, this.drawDot);
 		}
 	},
 	/* Draw a 'hint' when a dot is mouse-hovered
 	 * It's basically a rectangle with smooth corners
 	 * a gravatar image + name + hash of the commit + comment */
-	drawHint: function(ctx, hint, x, y) {
-		/* draw the smoothed rectangle */
+	drawHint: function(ctx, hint) {
+		var x = (this.names_width * 2) + (20 * hint.time) - this.xoffset + 10;
+		var y = 80 + 20 * hint.space - this.yoffset - 10;
+		/* compute the height of the hint box */
 		ctx.font = "small sans-serif";
 		ctx.fillStyle = "black";
 		var txtlen = ctx.measureTextLines(hint.message, 400 - 15 - 15);
 		var maxy = 70 + txtlen * 15 + 5;
+		/* reposition the hint horizontally */
+		if (x + 10 + 400 > this.width) {
+			x = this.width - 400 - 10;
+		} else if (x + 10 < this.names_width) {
+			x = this.names_width + 10;
+		} else {
+			x += 10;
+		}
+		/* reposition the hint vertically */
+		if (y + 10 + maxy > this.height) {
+			/* not enough space under the dot */
+			y = Math.max(40, y - 10 - maxy);
+		} else if (y < 40) {
+			y = 40 + 10;
+		} else {
+			y += 10;
+		}
+		/* draw the smoothed rectangle */
 		ctx.beginPath();
 		ctx.strokeStyle = "black";
 		ctx.fillStyle = "white";
