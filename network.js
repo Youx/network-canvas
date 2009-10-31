@@ -1,3 +1,9 @@
+/* Note about canvas multi text line functions :
+ * It kinda sucks that the canvas does not provide its own
+ * functions. This function considers the input data's width
+ * is evenly distributed around characters. A sentence like
+ * "AAAAAAAA aaaaaaaa" split in two may pose problem. A rewrite
+ * will be necessary, but not a priority */
 /* This function returns the number one lines we need to use to
  * write text over a length < maxwidth. It is only completely
  * correct when using a monotype font but should be approximate
@@ -24,9 +30,9 @@ CanvasRenderingContext2D.prototype.fillTextMultiLine = function(str, x, y, maxWi
 	}
 };
 
-// Line Splitter Function
-// copyright Stephen Chapman, 19th April 2006
-// you may copy this code but please keep the copyright notice as well
+/* Line Splitter Function
+ * copyright Stephen Chapman, 19th April 2006
+ * you may copy this code but please keep the copyright notice as well */
 String.prototype.splitLine = function(n) {
 	var b = '';
 	var s = this;
@@ -46,6 +52,8 @@ String.prototype.splitLine = function(n) {
 	return [linecount, b+s];
 }
 
+/* Constructor for a network canvas, we need to give it
+ * a canvas ID */
 NetworkCanvas = function(canvasid, width, height, names_width) {
 	this.canvas = $('#'+canvasid).get(0);
 	this.height = height || 600;
@@ -252,34 +260,48 @@ NetworkCanvas.prototype = {
 		ctx.fillStyle = "rgb(64,64,64)";
 		ctx.fillRect(0,20,this.width,20);
 	},
+	/* Draw a name block in the left bar */
+	drawNameBlock: function(ctx, idx) {
+		var colors = ["rgb(235,235,255)", "rgb(224,224,255)"];
+		var val = this.meta.blocks[idx];
+		var ystart = 80 + val.start * 20;
+		var yend = ystart + val.count * 20;
+		
+		if ( (ystart - this.yoffset >= 40 && ystart - this.yoffset <= this.height) ||
+		     (yend - this.yoffset >= 40 && yend - this.yoffset <= this.height) ) {
+			/* draw the background */
+			if (this.mouse.lastPoint.y > ystart - this.yoffset &&
+				this.mouse.lastPoint.y <= yend - this.yoffset &&
+				this.mouse.lastPoint.x <= this.names_width) {
+				/* hovered */
+				ctx.fillStyle = "rgb(223,223,243)";
+				ctx.fillRect(0, ystart - this.yoffset, this.names_width, val.count * 20);
+			} else if (idx%2 == 1) {
+				/* odd lines */
+				ctx.fillStyle = "rgb(224,224,255)";
+				ctx.fillRect(0, ystart - this.yoffset, this.names_width, val.count * 20);
+			}
+			/* draw border */
+			ctx.strokeStyle = "rgb(222,222,222)";
+			ctx.lineWidth = "1";
+			ctx.beginPath();
+			ctx.moveTo(this.names_width, ystart - this.yoffset + 0.5);
+			ctx.lineTo(0.5, ystart - this.yoffset + 0.5);
+			ctx.lineTo(0.5, yend - this.yoffset + 0.5);
+			ctx.lineTo(this.names_width, yend - this.yoffset + 0.5);
+			ctx.stroke();
+			/* draw text */
+			ctx.fillStyle = "black";
+			ctx.fillText(val.name, 5, (ystart + yend) / 2 + this.yoffset + 5, this.names_width - 10);
+		}
+	},
 	/* Draw the names of each repository owner in the left column */
 	drawNames: function(ctx) {
-		var colors = ["rgb(235,235,255)", "rgb(224,224,255)"];
-		var y = 80;
 		ctx.save();
-		ctx.fillStyle = colors[0];
+		ctx.fillStyle = "rgb(235,235,255)";
 		ctx.fillRect(0, 40, this.names_width, this.height - 40)
 		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
-			var val = this.meta.blocks[i];
-			var ydest = y + val.count * 20;
-			if ( (y - this.yoffset >= 40 && y - this.yoffset <= this.height) ||
-			     (ydest - this.yoffset >= 40 && ydest - this.yoffset <= this.height) ) {
-				if (i%2 == 1) {
-					ctx.fillStyle = colors[1];
-					ctx.fillRect(0, y - this.yoffset, this.names_width, val.count * 20);
-				}
-				ctx.strokeStyle = "rgb(222,222,222)";
-				ctx.lineWidth = "1";
-				ctx.beginPath();
-				ctx.moveTo(this.names_width, y - this.yoffset + 0.5);
-				ctx.lineTo(0.5, y - this.yoffset + 0.5);
-				ctx.lineTo(0.5, y - this.yoffset + 0.5 + val.count * 20);
-				ctx.lineTo(this.names_width, y - this.yoffset + 0.5 + val.count * 20);
-				ctx.stroke();
-				ctx.fillStyle = "black";
-				ctx.fillText(val.name, 5, (y - this.yoffset) + (10 * val.count) + 5, this.names_width - 10);
-			}
-			y += val.count * 20;
+			this.drawNameBlock(ctx, i);
 		}
 		ctx.restore();
 	},
@@ -561,6 +583,7 @@ NetworkCanvas.Mouse = function(c) {
 		var end = 0;
 		var x = e.pageX - e.target.offsetLeft;
 		var y = e.pageY - e.target.offsetTop;
+		/* Movement while the mouse button is pressed = scrolling */
 		if (parnt.dragging) {
 			var dx = x - parnt.lastPoint.x;
 			var dy = y - parnt.lastPoint.y;
@@ -581,6 +604,7 @@ NetworkCanvas.Mouse = function(c) {
 			parnt.lastPoint.y = y;
 			parnt.canvas.draw();
 		} else {
+			/* if we're not scrolling, check for mouseovers */
 			var found = false;
 			for (var i = 0 ; i < parnt.canvas.dotsMouseOver.length ; i++) {
 				var val = parnt.canvas.dotsMouseOver[i];
@@ -614,4 +638,14 @@ NetworkCanvas.Mouse.prototype = {
 		this.canvas.canvas.onmousemove = this.move;
 		this.canvas.canvas.onmouseout = this.out;
 	}
+};
+
+/******* Here starts the keyboard management mechanics *******/
+NetworkCanvas.Keyboard = function(c) {
+	this.canvas = c;
+	var parnt = this;
+};
+
+NetworkCanvas.Keyboard.prototype = {
+
 };
