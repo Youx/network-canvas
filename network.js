@@ -248,7 +248,6 @@ NetworkCanvas.prototype = {
 		ctx.font = "small sans-serif";
 		ctx.fillStyle = "black";
 		ctx.fillTextMultiLine(hint.message, x + 15, y + 70, 400 - 15 - 15);
-		//done = 1;
 	},
 	/* Draw the black month bar at the top of the canvas */
 	drawMonthBar: function(ctx) {
@@ -292,7 +291,7 @@ NetworkCanvas.prototype = {
 			ctx.stroke();
 			/* draw text */
 			ctx.fillStyle = "black";
-			ctx.fillText(val.name, 5, (ystart + yend) / 2 + this.yoffset + 5, this.names_width - 10);
+			ctx.fillText(val.name, 5, (ystart + yend) / 2 - this.yoffset + 5, this.names_width - 10);
 		}
 	},
 	/* Draw the names of each repository owner in the left column */
@@ -605,6 +604,17 @@ NetworkCanvas.Mouse = function(c) {
 			parnt.canvas.draw();
 		} else {
 			/* if we're not scrolling, check for mouseovers */
+			if (x <= parnt.canvas.names_width && y > 40) {
+				parnt.cursorOnNames = true;
+				parnt.lastPoint.x = x;
+				parnt.lastPoint.y = y;
+				parnt.canvas.draw();
+			} else if (parnt.cursorOnNames == true) {
+				parnt.cursorOnNames = false;
+				parnt.lastPoint.x = x;
+				parnt.lastPoint.y = y;
+				parnt.canvas.draw();
+			}
 			var found = false;
 			for (var i = 0 ; i < parnt.canvas.dotsMouseOver.length ; i++) {
 				var val = parnt.canvas.dotsMouseOver[i];
