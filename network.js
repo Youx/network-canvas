@@ -632,10 +632,12 @@ NetworkCanvas.Mouse = function(c) {
 			/* check names (left column) mouseovers */
 			if (x <= parnt.canvas.names_width && y > 40) {
 				parnt.cursorOnNames = true;
+				parnt.canvas.canvas.style.cursor = 'pointer';
 				needRedraw = true;
 			} else if (parnt.cursorOnNames == true) {
 				parnt.cursorOnNames = false;
 				needRedraw = true;
+				parnt.canvas.canvas.style.cursor = 'default';
 			}
 			/* check dots mouseovers */
 			var found = false;
@@ -655,7 +657,7 @@ NetworkCanvas.Mouse = function(c) {
 				if (found == false) {
 					parnt.canvas.canvas.style.cursor ='default';
 				} else {
-					parnt.canvas.canvas.style.cursor ='hand';
+					parnt.canvas.canvas.style.cursor ='pointer';
 				}
 				parnt.canvas.drawDot = found;
 				needRedraw = true;
