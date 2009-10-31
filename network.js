@@ -83,6 +83,9 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 	/* Initialize mouse handler */
 	this.mouse = new NetworkCanvas.Mouse(this);
 	this.mouse.init();
+	/* Initialize keyboard handler */
+	this.keyboard = new NetworkCanvas.Keyboard(this);
+	this.keyboard.init();
 
 	this.loadData();
 };
@@ -656,8 +659,54 @@ NetworkCanvas.Mouse.prototype = {
 NetworkCanvas.Keyboard = function(c) {
 	this.canvas = c;
 	var parnt = this;
+	this.down = function(e) {
+		var needRedraw = false;
+		if (e.shiftKey) {
+			switch(e.which) {
+				case 72:	/* H */
+				case 37:	/* <- */
+					parnt.canvas.xoffset = 0;
+					needRedraw = true;
+					break;
+				case 76:	/* L */
+				case 39:	/* -> */
+					parnt.canvas.xoffset = parnt.canvas.maxx - (parnt.canvas.width - parnt.canvas.names_width);
+					needRedraw = true;
+					break;
+			}
+		} else {
+			switch(e.which) {
+				case 72:	/* H */
+				case 37:	/* <- */
+					parnt.canvas.xoffset -= 100;
+					needRedraw = true;
+					break;
+				case 76:	/* L */
+				case 39:	/* -> */
+					parnt.canvas.xoffset += 100;
+					needRedraw = true;
+					break;
+			}
+		}
+
+		if (parnt.canvas.xoffset < parnt.canvas.names_width)
+			parnt.canvas.xoffset = parnt.canvas.names_width;
+		if (parnt.canvas.xoffset > parnt.canvas.maxx)
+			parnt.canvas.xoffset = parnt.canvas.maxx;
+		/* limit up <-> down scrolling */
+		if (parnt.canvas.yoffset > parnt.canvas.maxy)
+			parnt.canvas.yoffset = parnt.canvas.maxy;
+		if (parnt.canvas.yoffset < 40)
+			parnt.canvas.yoffset = 40;
+
+		if (needRedraw) {
+			parnt.canvas.draw();
+		}
+	};
 };
 
 NetworkCanvas.Keyboard.prototype = {
-
+	init: function() {
+		$(document).keydown(this.down);
+	}
 };
