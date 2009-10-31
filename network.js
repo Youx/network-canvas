@@ -140,8 +140,14 @@ NetworkCanvas.prototype = {
 		/* if there is no */
 		if (!this.data[i] && !this.loading && i < this.meta.dates.length && i >= 0) {
 			this.loading = true;
-			var start = Math.max(i - this.names_width, 0);
-			$.getJSON("network_data_chunk.php?nethash="+ths.meta.nethash+"&start="+start+'&end='+(start+100), function(d) {
+			var start;
+			if (i > 0 && this.data[i - 1]) {	/* something on the left */
+				start = i;
+			} else {
+				start = Math.max(i - 100, 0);
+			}
+			var end = Math.min(start + 100, this.meta.dates.length - 1);
+			$.getJSON("network_data_chunk.php?nethash="+ths.meta.nethash+"&start="+start+'&end='+end, function(d) {
 				ths.parseData(d);
 				ths.loading = false;
 				ths.draw();
