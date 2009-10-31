@@ -674,9 +674,19 @@ NetworkCanvas.Keyboard = function(c) {
 					parnt.canvas.xoffset = 0;
 					needRedraw = true;
 					break;
+				case 75:	/* K */
+				case 38:	/* UP */
+					parnt.canvas.yoffset = 0;
+					needRedraw = true;
+					break;
 				case 76:	/* L */
 				case 39:	/* -> */
 					parnt.canvas.xoffset = parnt.canvas.maxx - (parnt.canvas.width - parnt.canvas.names_width);
+					needRedraw = true;
+					break;
+				case 74:	/* J */
+				case 40:	/* DOWN */
+					parnt.canvas.yoffset = parnt.canvas.maxy;
 					needRedraw = true;
 					break;
 			}
@@ -687,9 +697,19 @@ NetworkCanvas.Keyboard = function(c) {
 					parnt.canvas.xoffset -= 100;
 					needRedraw = true;
 					break;
+				case 75:	/* K */
+				case 38:	/* UP */
+					parnt.canvas.yoffset -= 20;
+					needRedraw = true;
+					break;
 				case 76:	/* L */
 				case 39:	/* -> */
 					parnt.canvas.xoffset += 100;
+					needRedraw = true;
+					break;
+				case 74:	/* J */
+				case 40:	/* DOWN */
+					parnt.canvas.yoffset += 20;
 					needRedraw = true;
 					break;
 			}
