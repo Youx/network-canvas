@@ -8,7 +8,7 @@ network-canvas is a reimplementation of github's network graph using HTML5 canva
 
 AFAIK, Canvas is supported by chrome, firefox 3+, opera and safari, so unless you are using IE or an old version of these browsers you shouldn't have any problem.
 
-Note that the original network flash file is 110kB large. The network.js file is only 19kB! Event better, it can be shrinked to less than 3kB by using YUI and gzip compression.
+Note that the original network flash file is 110kB large. The network.js file is only 25kB! Event better, it can be shrinked to less than 4kB by using [YUICompressor](http://developer.yahoo.com/yui/compressor) on the file and gzip compression on your server.
 
 Live example
 ------------
