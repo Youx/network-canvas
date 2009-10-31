@@ -579,6 +579,7 @@ NetworkCanvas.Mouse = function(c) {
 	 *   if the button is pressed (dragging)
 	 * - check if we are hovering a dot so we can display a hint */
 	this.move = function(e) {
+		var needRedraw = false;
 		var end = 0;
 		var x = e.pageX - e.target.offsetLeft;
 		var y = e.pageY - e.target.offsetTop;
@@ -599,22 +600,18 @@ NetworkCanvas.Mouse = function(c) {
 			if (parnt.canvas.yoffset < 40)
 				parnt.canvas.yoffset = 40;
 
-			parnt.lastPoint.x = x;
-			parnt.lastPoint.y = y;
-			parnt.canvas.draw();
+			needRedraw = true;
 		} else {
 			/* if we're not scrolling, check for mouseovers */
+			/* check names (left column) mouseovers */
 			if (x <= parnt.canvas.names_width && y > 40) {
 				parnt.cursorOnNames = true;
-				parnt.lastPoint.x = x;
-				parnt.lastPoint.y = y;
-				parnt.canvas.draw();
+				needRedraw = true;
 			} else if (parnt.cursorOnNames == true) {
 				parnt.cursorOnNames = false;
-				parnt.lastPoint.x = x;
-				parnt.lastPoint.y = y;
-				parnt.canvas.draw();
+				needRedraw = true;
 			}
+			/* check dots mouseovers */
 			var found = false;
 			for (var i = 0 ; i < parnt.canvas.dotsMouseOver.length ; i++) {
 				var val = parnt.canvas.dotsMouseOver[i];
@@ -635,8 +632,13 @@ NetworkCanvas.Mouse = function(c) {
 					parnt.canvas.canvas.style.cursor ='hand';
 				}
 				parnt.canvas.drawDot = found;
-				parnt.canvas.draw();
+				needRedraw = true;
 			}
+		}
+		if (needRedraw) {
+			parnt.lastPoint.x = x;
+			parnt.lastPoint.y = y;
+			parnt.canvas.draw();
 		}
 	}
 };
