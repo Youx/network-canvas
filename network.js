@@ -100,7 +100,7 @@ NetworkCanvas.prototype = {
 		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
 			this.maxy += 20 * this.meta.blocks[i].count;
 			for (var j = 0 ; j < this.meta.blocks[i].count ; j++) {
-				this.usersBySpace[this.meta.blocks[i].start + j] = this.meta.blocks[i].name;
+				this.usersBySpace[this.meta.blocks[i].start + j] = this.meta.users[i];
 			}
 		}
 		/* each column takes 20px */
@@ -376,6 +376,7 @@ NetworkCanvas.prototype = {
 		ctx.save();
 		ctx.font = "10px monospace"
 		var size = ctx.measureText(label).width;
+		/* draw the shape */
 		ctx.beginPath();
 		ctx.fillStyle = "black";
 		ctx.globalAlpha = 0.8;
@@ -442,9 +443,9 @@ NetworkCanvas.prototype = {
 			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
 			var y = 80 + 20 * val.space - this.yoffset - 10;
 			var yhead = y + 5;
-			if (this.heads[this.usersBySpace[val.space - 1]] && this.heads[this.usersBySpace[val.space - 1]][val.id]) {
-				for (var j = 0 ; j < this.heads[this.usersBySpace[val.space - 1]][val.id].length ; j++) {
-					var label = this.heads[this.usersBySpace[val.space - 1]][val.id][j];
+			if (this.heads[this.usersBySpace[val.space - 1].name] && this.heads[this.usersBySpace[val.space - 1].name][val.id]) {
+				for (var j = 0 ; j < this.heads[this.usersBySpace[val.space - 1].name][val.id].length ; j++) {
+					var label = this.heads[this.usersBySpace[val.space - 1].name][val.id][j];
 					yhead += this.drawHead(ctx, label, x, yhead) + 5;
 				}
 			}
@@ -572,8 +573,22 @@ NetworkCanvas.Mouse = function(c) {
 	this.down = function(e) {
 		parnt.lastPoint.x = e.pageX - e.target.offsetLeft;
 		parnt.lastPoint.y = e.pageY - e.target.offsetTop;
-		if (this.drawDot) {
-			/* change url to http://github.com/$user/$repository */
+		/* if we clicked on a dot, open commit in new window */
+		if (parnt.canvas.drawDot) {
+			var user = parnt.canvas.usersBySpace[parnt.canvas.drawDot.space - 1];
+			window.open("http://github.com/"+user.name+"/"+user.repo+"/commit/"+parnt.canvas.drawDot.id);
+		}
+		/* if we clicked on a name, go to network for this person */
+		if (parnt.lastPoint.x < parnt.canvas.names_width && parnt.lastPoint.y > 40) {
+			for (var i = 0 ; i < parnt.canvas.meta.blocks.length ; i++) {
+				var val = parnt.canvas.meta.blocks[i];
+				var ystart = 80 + val.start * 20;
+				var yend = ystart + val.count * 20;
+				if ((ystart - parnt.canvas.yoffset <= parnt.lastPoint.y && yend - parnt.canvas.yoffset >= parnt.lastPoint.y)) {
+					var user = parnt.canvas.meta.users[i];
+					document.location.href = "http://github.com/"+user.name+"/"+user.repo+"/network";
+				}
+			}
 		}
 		parnt.dragging = true;
 	};
