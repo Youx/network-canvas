@@ -540,6 +540,9 @@ NetworkCanvas.Mouse = function(c) {
 	this.down = function(e) {
 		parnt.lastPoint.x = e.pageX - e.target.offsetLeft;
 		parnt.lastPoint.y = e.pageY - e.target.offsetTop;
+		if (this.drawDot) {
+			/* change url to http://github.com/$user/$repository */
+		}
 		parnt.dragging = true;
 	};
 	/* When the mouse button is released, we stop the dragging */
