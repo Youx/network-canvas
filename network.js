@@ -71,6 +71,7 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 	this.meta;			/* the metadata loaded from 'network_meta' file */
 	this.data = [];			/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
 	this.heads = {};
+	this.drawLabels = true;
 
 	this.maxx = - this.width + (this.xoffset * 2);
 	/* the +100 is just a margin in case we need to display HEADS */
@@ -527,7 +528,8 @@ NetworkCanvas.prototype = {
 	drawData: function(ctx) {
 		this.drawDataLinks(ctx);
 		this.drawDataDots(ctx);
-		this.drawDataHeads(ctx);
+		if (this.drawLabels)
+			this.drawDataHeads(ctx);
 	},
 	/* Calculate if we will need to draw an arrow (two segments)
 	 * in this canvas (the whole data is bigger than the canvas, so
@@ -710,6 +712,10 @@ NetworkCanvas.Keyboard = function(c) {
 				case 74:	/* J */
 				case 40:	/* DOWN */
 					parnt.canvas.yoffset += 20;
+					needRedraw = true;
+					break;
+				case 84:	/* T */
+					parnt.canvas.drawLabels = !parnt.canvas.drawLabels;
 					needRedraw = true;
 					break;
 			}
