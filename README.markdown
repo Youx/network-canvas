@@ -10,6 +10,11 @@ AFAIK, Canvas is supported by chrome, firefox 3+, opera and safari, so unless yo
 
 Note that the original network flash file is 110kB large. The network.js file is only 25kB! Even better, it can be shrinked to less than 4kB by using [YUICompressor](http://developer.yahoo.com/yui/compressor) on the file and gzip compression on your server.
 
+Live example
+------------
+
+Check [this](http://hugo.golgoth.net:3000/mojombo/eventmachine/network) out!
+
 How to use it
 -------------
 
