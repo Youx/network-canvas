@@ -120,11 +120,11 @@ NetworkCanvas.prototype = {
 	},
 	loadData: function() {
 		var ths = this;
-		$.getJSON("network_meta.php", function(data1) {
+		$.getJSON("network_meta", function(data1) {
 			ths.meta = data1;
 			ths.parseMeta();
 			ths.xoffset = ths.names_width + ths.meta.focus * 20;
-			$.getJSON("network_data_chunk.php?nethash="+ths.meta.nethash, function(data2) {
+			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash, function(data2) {
 				ths.parseData(data2);
 				ths.draw();
 			});
@@ -148,7 +148,7 @@ NetworkCanvas.prototype = {
 				start = Math.max(i - 100, 0);
 			}
 			var end = Math.min(start + 100, this.meta.dates.length - 1);
-			$.getJSON("network_data_chunk.php?nethash="+ths.meta.nethash+"&start="+start+'&end='+end, function(d) {
+			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash+"&start="+start+'&end='+end, function(d) {
 				ths.parseData(d);
 				ths.loading = false;
 				ths.draw();
@@ -586,7 +586,7 @@ NetworkCanvas.Mouse = function(c) {
 				var yend = ystart + val.count * 20;
 				if ((ystart - parnt.canvas.yoffset <= parnt.lastPoint.y && yend - parnt.canvas.yoffset >= parnt.lastPoint.y)) {
 					var user = parnt.canvas.meta.users[i];
-					document.location.href = "http://github.com/"+user.name+"/"+user.repo+"/network";
+					document.location.href = "/"+user.name+"/"+user.repo+"/network";
 				}
 			}
 		}
