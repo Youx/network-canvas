@@ -20,7 +20,7 @@ How to use it
 
 You will need to have [Thin](http://code.macournoyer.com/thin/) installed (use gem).
 
-Run ./server.sh, then just point your browser to http://localhost:3000/<user>/<repo>/network to get the network graph for a given user/repository.
+Run ./server.sh, then just point your browser to http://localhost:3000/&lt;user>/&lt;repo>/network to get the network graph for a given user/repository.
 
 Example : http://localhost:3000/mojombo/eventmachine/network
 
