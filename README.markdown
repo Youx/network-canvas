@@ -10,21 +10,14 @@ AFAIK, Canvas is supported by chrome, firefox 3+, opera and safari, so unless yo
 
 Note that the original network flash file is 110kB large. The network.js file is only 25kB! Event better, it can be shrinked to less than 4kB by using [YUICompressor](http://developer.yahoo.com/yui/compressor) on the file and gzip compression on your server.
 
-Live example
-------------
-
-Try it here, it uses mojombo/eventmachine as a sample project : [example](http://hugo.golgoth.net/network-canvas)
-
 How to use it
 -------------
 
-This is currently beta quality, NOT FOR USE. You've been warned.
+You will need to have [Thin](http://code.macournoyer.com/thin/) installed (use gem).
 
-First, grab the code, put it in an apache folder, and try accessing index.html.
+Run ./server.sh, then just point your browser to http://localhost:3000/<user>/<repo>/network to get the network graph for a given user/repository.
 
-Since we can't do AJAX requests to external servers (that would be cross site scripting, considered by browsers as an attack vector), we have to use a php script to proxy the request to retrieve the data chunks from github.
-
-The data used is streamed from mojombo's eventmachine project on github, though you can change that in config.php
+Example : http://localhost:3000/mojombo/eventmachine/network
 
 Screenshot
 ----------
