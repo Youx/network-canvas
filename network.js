@@ -68,9 +68,11 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 
 	this.dotsMouseOver = [];	/* here we store the dots we can hover */
 	this.avatars = {};		/* we store images loaded from gravatars in there */
-	this.meta;			/* the metadata loaded from 'network_meta' file */
-	this.data = [];			/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
-	this.heads = {};
+
+	/* Initialize the data loader */
+	this.dataManager = new NetworkCanvas.DataManager(this);
+	this.dataManager.init();
+
 	this.drawLabels = true;
 
 	this.maxx = - this.width + (this.xoffset * 2);
@@ -87,83 +89,17 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 	/* Initialize keyboard handler */
 	this.keyboard = new NetworkCanvas.Keyboard(this);
 	this.keyboard.init();
-
-	this.loadData();
 };
 
 NetworkCanvas.prototype = {
-	/* Compute the max width and height of the data inside the
-	 * canvas so we can block scrolling when going too far
-	 * We also put the HEADS in an associative array */
-	parseMeta: function() {
-		/* each user can take 20px * X in height */
-		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
-			this.maxy += 20 * this.meta.blocks[i].count;
-			for (var j = 0 ; j < this.meta.blocks[i].count ; j++) {
-				this.usersBySpace[this.meta.blocks[i].start + j] = this.meta.users[i];
-			}
-		}
-		/* each column takes 20px */
-		this.maxx = 100 + (this.meta.dates.length * 20);
-		/* parse the heads */
-		for (var i = 0 ; i < this.meta.users.length ; i++) {
-			var val = this.meta.users[i];
-			if(!this.heads[val.name])
-				this.heads[val.name] = {};
-			for (var j = 0 ; j < val.heads.length ; j++) {
-				var head = val.heads[j];
-				if (!this.heads[val.name][head.id])
-					this.heads[val.name][head.id] = [];
-				this.heads[val.name][head.id].push(head.name);
-			}
-		}
-	},
-	loadData: function() {
-		var ths = this;
-		$.getJSON("network_meta", function(data1) {
-			ths.meta = data1;
-			ths.parseMeta();
-			ths.xoffset = ths.names_width + ths.meta.focus * 20;
-			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash, function(data2) {
-				ths.parseData(data2);
-				ths.draw();
-			});
-		});
-	},
-	parseData: function(d) {
-		for (var i = 0 ; i < d.commits.length ; i++) {
-			var commit = d.commits[i];
-			this.data[commit.time] = commit;
-		}
-	},
-	getCommit: function(i) {
-		var ths = this;
-		/* if there is no */
-		if (!this.data[i] && !this.loading && i < this.meta.dates.length && i >= 0) {
-			this.loading = true;
-			var start;
-			if (i > 0 && this.data[i - 1]) {	/* something on the left */
-				start = i;
-			} else {
-				start = Math.max(i - 100, 0);
-			}
-			var end = Math.min(start + 100, this.meta.dates.length - 1);
-			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash+"&start="+start+'&end='+end, function(d) {
-				ths.parseData(d);
-				ths.loading = false;
-				ths.draw();
-			});
-		}
-		return this.data[i];
-	},
 	/* The main draw function, it load the context from the canvas
 	 * and draws everything on it. It's called everytime we have
 	 * to update the graphics. */
 	draw: function() {
 		/* if the data is not loaded yet, draw nothing */
-		if (!this.meta)
+		if (!this.dataManager.meta)
 			return;
-		if (!this.data)
+		if (!this.dataManager.data)
 			return;
 
 		/* retreive the canvas */
@@ -272,7 +208,7 @@ NetworkCanvas.prototype = {
 	/* Draw a name block in the left bar */
 	drawNameBlock: function(ctx, idx) {
 		var colors = ["rgb(235,235,255)", "rgb(224,224,255)"];
-		var val = this.meta.blocks[idx];
+		var val = this.dataManager.meta.blocks[idx];
 		var ystart = 80 + val.start * 20;
 		var yend = ystart + val.count * 20;
 		
@@ -309,7 +245,7 @@ NetworkCanvas.prototype = {
 		ctx.save();
 		ctx.fillStyle = "rgb(235,235,255)";
 		ctx.fillRect(0, 40, this.names_width, this.height - 40)
-		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
+		for (var i = 0 ; i < this.dataManager.meta.blocks.length ; i++) {
 			this.drawNameBlock(ctx, i);
 		}
 		ctx.restore();
@@ -321,8 +257,8 @@ NetworkCanvas.prototype = {
 		ctx.save();
 		ctx.fillStyle = colors[0];
 		ctx.fillRect(this.names_width, 40, this.width - this.names_width, this.height - 40)
-		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
-			var val = this.meta.blocks[i];
+		for (var i = 0 ; i < this.dataManager.meta.blocks.length ; i++) {
+			var val = this.dataManager.meta.blocks[i];
 			var ydest = y + val.count * 20;
 			if ( (y - this.yoffset >= 40 && y - this.yoffset <= this.height) ||
 			     (ydest - this.yoffset >= 40 && ydest - this.yoffset <= this.height) ) {
@@ -350,10 +286,10 @@ NetworkCanvas.prototype = {
 		if (min <= 0)
 			olddate = [1970,1,1];
 		else
-			olddate = this.meta.dates[min - 1].split("-");
+			olddate = this.dataManager.meta.dates[min - 1].split("-");
 
 		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width)/20 + 50) ; i++) {
-			var val = this.meta.dates[i];
+			var val = this.dataManager.meta.dates[i];
 			if (!val)
 				continue;
 			newdate = val.split("-");
@@ -405,7 +341,7 @@ NetworkCanvas.prototype = {
 		this.dotsMouseOver = [];
 		/* Draw all the dots */
 		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width + this.width)/20) ; i++) {
-			var val = this.getCommit(i);
+			var val = this.dataManager.getCommit(i);
 			if (!val)
 				continue;
 			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
@@ -437,15 +373,15 @@ NetworkCanvas.prototype = {
 	drawDataHeads: function(ctx) {
 		/* Draw all the HEADS */
 		for (var i = parseInt((this.xoffset - this.names_width)/20) ; i <= parseInt((this.xoffset - this.names_width + this.width)/20) ; i++) {
-			var val = this.getCommit(i);
+			var val = this.dataManager.getCommit(i);
 			if (!val)
 				continue;
 			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
 			var y = 80 + 20 * val.space - this.yoffset - 10;
 			var yhead = y + 5;
-			if (this.heads[this.usersBySpace[val.space - 1].name] && this.heads[this.usersBySpace[val.space - 1].name][val.id]) {
-				for (var j = 0 ; j < this.heads[this.usersBySpace[val.space - 1].name][val.id].length ; j++) {
-					var label = this.heads[this.usersBySpace[val.space - 1].name][val.id][j];
+			if (this.dataManager.heads[this.usersBySpace[val.space - 1].name] && this.dataManager.heads[this.usersBySpace[val.space - 1].name][val.id]) {
+				for (var j = 0 ; j < this.dataManager.heads[this.usersBySpace[val.space - 1].name][val.id].length ; j++) {
+					var label = this.dataManager.heads[this.usersBySpace[val.space - 1].name][val.id][j];
 					yhead += this.drawHead(ctx, label, x, yhead) + 5;
 				}
 			}
@@ -454,8 +390,8 @@ NetworkCanvas.prototype = {
 	drawDataLinks: function(ctx) {
 		/* draw points */
 		var displaycount = 0;
-		for (var i = this.data.length - 1; i >= parseInt((this.xoffset - this.names_width)/20) ; i--) {
-			var val = this.getCommit(i);
+		for (var i = this.dataManager.data.length - 1; i >= parseInt((this.xoffset - this.names_width)/20) ; i--) {
+			var val = this.dataManager.getCommit(i);
 			if (!val)
 				continue;
 			var x = (this.names_width * 2) + (20 * val.time) - this.xoffset + 10;
@@ -558,6 +494,85 @@ NetworkCanvas.prototype = {
 	}
 };
 
+/******* Here starts the data loading mechanics *******/
+NetworkCanvas.DataManager = function(c) {
+	this.canvas = c;
+	this.meta;			/* the metadata loaded from 'network_meta' file */
+	this.data = [];			/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
+	this.heads = {};
+};
+
+NetworkCanvas.DataManager.prototype = {
+	init: function() {
+		var ths = this;
+		$.getJSON("network_meta", function(metadata) {
+			ths.meta = metadata;
+			ths.parseMeta();
+			ths.canvas.xoffset = ths.canvas.names_width + ths.meta.focus * 20;
+			ths.loadStartData();
+		});
+	},
+	/* Compute the max width and height of the data inside the
+	 * canvas so we can block scrolling when going too far
+	 * We also put the HEADS in an associative array */
+	parseMeta: function() {
+		/* each user can take 20px * X in height */
+		for (var i = 0 ; i < this.meta.blocks.length ; i++) {
+			this.canvas.maxy += 20 * this.meta.blocks[i].count;
+			for (var j = 0 ; j < this.meta.blocks[i].count ; j++) {
+				this.canvas.usersBySpace[this.meta.blocks[i].start + j] = this.meta.users[i];
+			}
+		}
+		/* each column takes 20px */
+		this.canvas.maxx = 100 + (this.meta.dates.length * 20);
+		/* parse the heads */
+		for (var i = 0 ; i < this.meta.users.length ; i++) {
+			var val = this.meta.users[i];
+			if(!this.heads[val.name])
+				this.heads[val.name] = {};
+			for (var j = 0 ; j < val.heads.length ; j++) {
+				var head = val.heads[j];
+				if (!this.heads[val.name][head.id])
+					this.heads[val.name][head.id] = [];
+				this.heads[val.name][head.id].push(head.name);
+			}
+		}
+	},
+	parseDataChunk: function(chunk) {
+		for (var i = 0 ; i < chunk.commits.length ; i++) {
+			var commit = chunk.commits[i];
+			this.data[commit.time] = commit;
+		}
+	},
+	loadStartData: function() {
+		var ths = this;
+		$.getJSON("network_data_chunk?nethash="+ths.meta.nethash, function(chunk) {
+			ths.parseDataChunk(chunk);
+			ths.canvas.draw();
+		});
+	},
+	getCommit: function(i) {
+		var ths = this;
+		/* if there is no */
+		if (!this.data[i] && !this.canvas.loading && i < this.meta.dates.length && i >= 0) {
+			this.canvas.loading = true;
+			var start;
+			if (i > 0 && this.data[i - 1]) {	/* something on the left */
+				start = i;
+			} else {
+				start = Math.max(i - 100, 0);
+			}
+			var end = Math.min(start + 100, this.meta.dates.length - 1);
+			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash+"&start="+start+'&end='+end, function(d) {
+				ths.parseDataChunk(d);
+				ths.canvas.loading = false;
+				ths.canvas.draw();
+			});
+		}
+		return this.data[i];
+	}
+};
+
 /******* Here starts the mouse management mechanics *******/
 NetworkCanvas.Mouse = function(c) {
 	this.dragging = false;		/* is the mouse button pressed right now? */
@@ -580,12 +595,12 @@ NetworkCanvas.Mouse = function(c) {
 		}
 		/* if we clicked on a name, go to network for this person */
 		if (parnt.lastPoint.x < parnt.canvas.names_width && parnt.lastPoint.y > 40) {
-			for (var i = 0 ; i < parnt.canvas.meta.blocks.length ; i++) {
-				var val = parnt.canvas.meta.blocks[i];
+			for (var i = 0 ; i < parnt.canvas.dataManager.meta.blocks.length ; i++) {
+				var val = parnt.canvas.dataManager.meta.blocks[i];
 				var ystart = 80 + val.start * 20;
 				var yend = ystart + val.count * 20;
 				if ((ystart - parnt.canvas.yoffset <= parnt.lastPoint.y && yend - parnt.canvas.yoffset >= parnt.lastPoint.y)) {
-					var user = parnt.canvas.meta.users[i];
+					var user = parnt.canvas.dataManager.meta.users[i];
 					document.location.href = "/"+user.name+"/"+user.repo+"/network";
 				}
 			}
