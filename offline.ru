@@ -1,6 +1,10 @@
 #!/usr/bin/env ruby
 
 require 'net/http'
+require 'json'
+
+meta = JSON.parse(File.read('offline/meta.json'))
+data = JSON.parse(File.read('offline/data.json'))
 
 app = proc do |ev|
   ret = ""
@@ -11,12 +15,21 @@ app = proc do |ev|
   options[:page] = req_path[3]
   case options[:page]
     when 'network_meta'
-      puts("=> http://github.com#{ev['REQUEST_URI']}")
-      ret = Net::HTTP.get('github.com', ev["REQUEST_URI"])
+      ret = meta.to_json
       typ = 'text/json'
     when 'network_data_chunk'
-      puts("=> http://github.com#{ev['REQUEST_URI']}")
-      ret = Net::HTTP.get('github.com', ev["REQUEST_URI"])
+      start, finish = 558,758
+      query = {}
+      ev['QUERY_STRING'].split('&').each do |arg|
+        args = arg.split('=')
+        query[args[0]] = args[1]
+      end
+      if (query['start'] && query['end'])
+        start, finish = query['start'].to_i, query['end'].to_i
+      end
+      gen = {}
+      gen['commits'] = data['commits'][start..finish]
+      ret = gen.to_json
       typ = 'text/json'
     when 'network.js'
       ret = File.read('network.js')
