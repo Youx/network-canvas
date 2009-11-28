@@ -554,17 +554,17 @@ NetworkCanvas.DataManager.prototype = {
 	},
 	getCommit: function(i) {
 		var ths = this;
-		/* if there is no */
-		if (!this.data[i] && i < this.meta.dates.length && i >= 0) {
+		/* if there is no existing data loaded */
+		if (!this.data[i] && i < this.meta.dates.length && i >= 0 && (!this.loading[i] || this.loading[i] == false)) {
 			var start;
-			if (i > 0 && this.data[i - 1]) {	/* something on the left */
+			if (i >= 1 && this.data[i - 1]) {
+				/* there is something on the left */
 				start = i;
 			} else {
 				start = Math.max(i - 100, 0);
 			}
 			var end = Math.min(start + 100, this.meta.dates.length - 1);
-			//alert("getcommit : "+start+" -> "+end);
-			for (var j = start ; j < end ; j++) {
+			for (var j = start ; j <= end ; j++) {
 				this.loading[j] = true;
 			}
 			if (!this.canvas.loading) {
@@ -587,7 +587,7 @@ NetworkCanvas.DataManager.prototype = {
 				end--;
 			}
 			var start = end;
-			while (this.loading[start] && end - start < 100 && !this.data[start])
+			while (start > 0 && this.loading[start] && end - start < 100 && !this.data[start])
 				start--;
 
 			$.ajax({

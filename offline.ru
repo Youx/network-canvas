@@ -18,7 +18,7 @@ app = proc do |ev|
       ret = meta.to_json
       typ = 'text/json'
     when 'network_data_chunk'
-      start, finish = 558,758
+      start, finish = 558, 758
       query = {}
       ev['QUERY_STRING'].split('&').each do |arg|
         args = arg.split('=')
