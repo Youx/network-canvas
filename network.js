@@ -390,7 +390,7 @@ NetworkCanvas.prototype = {
 	drawDataLinks: function(ctx) {
 		/* draw points */
 		var displaycount = 0;
-		for (var i = this.dataManager.data.length - 1; i >= parseInt((this.xoffset - this.names_width)/20) ; i--) {
+		for (var i = this.dataManager.meta.dates.length - 1; i >= parseInt((this.xoffset - this.names_width)/20) ; i--) {
 			var val = this.dataManager.getCommit(i);
 			if (!val)
 				continue;
