@@ -500,6 +500,7 @@ NetworkCanvas.DataManager = function(c) {
 	this.meta;			/* the metadata loaded from 'network_meta' file */
 	this.data = [];			/* the data loaded from 'network_data?nethash=<hash>&start=<s>&end=<e> */
 	this.heads = {};
+	this.loading = [];
 };
 
 NetworkCanvas.DataManager.prototype = {
@@ -554,8 +555,7 @@ NetworkCanvas.DataManager.prototype = {
 	getCommit: function(i) {
 		var ths = this;
 		/* if there is no */
-		if (!this.data[i] && !this.canvas.loading && i < this.meta.dates.length && i >= 0) {
-			this.canvas.loading = true;
+		if (!this.data[i] && i < this.meta.dates.length && i >= 0) {
 			var start;
 			if (i > 0 && this.data[i - 1]) {	/* something on the left */
 				start = i;
@@ -563,13 +563,51 @@ NetworkCanvas.DataManager.prototype = {
 				start = Math.max(i - 100, 0);
 			}
 			var end = Math.min(start + 100, this.meta.dates.length - 1);
-			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash+"&start="+start+'&end='+end, function(d) {
-				ths.parseDataChunk(d);
-				ths.canvas.loading = false;
-				ths.canvas.draw();
-			});
+			//alert("getcommit : "+start+" -> "+end);
+			for (var j = start ; j < end ; j++) {
+				this.loading[j] = true;
+			}
+			if (!this.canvas.loading) {
+				this.loadData();
+			}
 		}
 		return this.data[i];
+	},
+	loadData: function() {
+		var ths = this;
+		var len = 0;
+		this.canvas.loading = true;
+
+		for (var i = 0 ; i < this.loading.length ; i++)
+			if (this.loading[i] && !this.data[i])
+				len++;
+		while(len > 0) {
+			var end = this.loading.length - 1;
+			while (!this.loading[end] || this.data[end]) {
+				end--;
+			}
+			var start = end;
+			while (this.loading[start] && end - start < 100 && !this.data[start])
+				start--;
+
+			$.ajax({
+				async: false,
+				dataType: "json",
+				url: "network_data_chunk?nethash="+this.meta.nethash+"&start="+start+'&end='+end,
+				success: function(d) {
+					ths.parseDataChunk(d);
+					ths.canvas.draw();
+				}
+			});
+
+			for (var i = end; i >= start ; i--)
+				this.loading[i] = false;
+			len = 0;
+			for (var i = 0 ; i < this.loading.length ; i++)
+				if (this.loading[i] && !this.data[i])
+					len++;
+		}
+		this.canvas.loading = false;
 	}
 };
 
