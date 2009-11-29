@@ -398,6 +398,14 @@ NetworkCanvas.prototype = {
 			var y = 80 + 20 * val.space - this.yoffset - 10;
 			ctx.strokeStyle = this.branchColor[(val.space-1)%this.branchColor.length];
 			ctx.lineWidth = 2;
+
+			var middle_used = false;
+			for (var j = 0 ; j < val.parents.length ; j++) {
+				var parnt = val.parents[j];
+				if (parnt[2] == val.space) {
+					middle_used = true;
+				}
+			}
 			/* for each dot, we ~may~ have to draw the line/arrow
 			 * to its parent. */
 			for (var j = 0 ; j < val.parents.length ; j++) {
@@ -439,23 +447,43 @@ NetworkCanvas.prototype = {
 				} else {
 					/* the parent is < the current, this
 					 * will be a fork arrow */
-					ctx.beginPath();
-					ctx.strokeStyle = this.branchColor[(val.space-1)%this.branchColor.length];
-					ctx.fillStyle = this.branchColor[(val.space-1)%this.branchColor.length];
-					/* draw arrowhead */
-					ctx.lineWidth = 1;
-					ctx.moveTo(x - 5, y);
-					ctx.lineTo(x - 5 - 9, y - 3.5);
-					ctx.lineTo(x - 5 - 9, y + 3.5);
-					ctx.lineTo(x - 5, y);
-					ctx.fill();
-					/* draw lines */
-					ctx.beginPath();
-					ctx.lineWidth = 2;
-					ctx.moveTo(x - 5 - 8, y);
-					ctx.lineTo(xdest, y);
-					ctx.lineTo(xdest, ydest + 5);
-					ctx.stroke();
+					if (middle_used == false) {
+						ctx.beginPath();
+						ctx.strokeStyle = this.branchColor[(val.space-1)%this.branchColor.length];
+						ctx.fillStyle = this.branchColor[(val.space-1)%this.branchColor.length];
+						/* draw arrowhead */
+						ctx.lineWidth = 1;
+						ctx.moveTo(x - 5, y);
+						ctx.lineTo(x - 5 - 9, y - 3.5);
+						ctx.lineTo(x - 5 - 9, y + 3.5);
+						ctx.lineTo(x - 5, y);
+						ctx.fill();
+						/* draw lines */
+						ctx.beginPath();
+						ctx.lineWidth = 2;
+						ctx.moveTo(x - 5 - 8, y);
+						ctx.lineTo(xdest, y);
+						ctx.lineTo(xdest, ydest + 5);
+						ctx.stroke();
+					} else {
+						ctx.beginPath();
+						ctx.lineWidth = 2;
+						ctx.strokeStyle = this.branchColor[(val.space-1)%this.branchColor.length];
+						ctx.fillStyle = this.branchColor[(val.space-1)%this.branchColor.length];
+						ctx.moveTo(xdest, ydest + 5);
+						ctx.lineTo(xdest, y - 12);
+						ctx.lineTo(x - 12, y - 12);
+						ctx.lineTo(x - 9, y - 9);
+						ctx.stroke();
+						/* draw arrowhead */
+						ctx.beginPath();
+						ctx.lineWidth = 1;
+						ctx.moveTo(x - 5, y - 5);
+						ctx.lineTo(x - 13, y - 8);
+						ctx.lineTo(x - 7, y - 14);
+						ctx.lineTo(x - 5, y - 5);
+						ctx.fill();
+					}
 				}
 			}
 		}
