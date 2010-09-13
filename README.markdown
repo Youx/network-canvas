@@ -28,3 +28,14 @@ Screenshot
 ----------
 
 ![Screenshot as of 23/10/2009](http://cloud.github.com/downloads/Youx/network-canvas/network-canvas.png)
+
+Licensing
+---------
+
+This piece of code is licensed under a BSD License (specifically : Simplified BSD License / FreeBSD License)
+This means you only need to give credit where credit is due when distributing it.
+See the COPYING file for more information.
+
+HOWEVER
+
+I would be extremely grateful if you could contribute back the changes you make. I won't force it out of you, but think of it as being civil. Thanks! :)

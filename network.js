@@ -1,3 +1,6 @@
+/* Copyright 2009-2010 Hugo Camboulive <hugo DOT camboulive AT gmail DOT com>
+ * Licensed under a BSD license */
+
 /* Note about canvas multi text line functions :
  * It kinda sucks that the canvas does not provide its own
  * functions. This function considers the input data's width
