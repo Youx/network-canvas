@@ -57,7 +57,7 @@ String.prototype.splitLine = function(n) {
 
 /* Constructor for a network canvas, we need to give it
  * a canvas ID */
-NetworkCanvas = function(canvasid, width, height, names_width) {
+NetworkCanvas = function(canvasid, width, height, names_width, meta, data) {
 	this.canvas = $('#'+canvasid).get(0);
 	this.height = height || 600;
 	this.width = width || 920;
@@ -91,7 +91,7 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 
 	/* Initialize the data loader */
 	this.dataManager = new NetworkCanvas.DataManager(this);
-	this.dataManager.init();
+	this.dataManager.init(meta, data);
 };
 
 NetworkCanvas.prototype = {
@@ -535,14 +535,21 @@ NetworkCanvas.DataManager = function(c) {
 };
 
 NetworkCanvas.DataManager.prototype = {
-	init: function() {
+	init: function(meta, data) {
 		var ths = this;
-		$.getJSON("network_meta", function(metadata) {
-			ths.meta = metadata;
-			ths.parseMeta();
-			ths.canvas.xoffset = ths.canvas.names_width + ths.meta.focus * 20;
-			ths.loadStartData();
-		});
+		if (meta != null && data != null) {
+			this.meta = meta;
+			this.parseMeta();
+			this.canvas.xoffset = ths.canvas.names_width + ths.meta.focus * 20;
+			this.loadStartData(data);
+		} else {
+			$.getJSON("network_meta", function(metadata) {
+				ths.meta = metadata;
+				ths.parseMeta();
+				ths.canvas.xoffset = ths.canvas.names_width + ths.meta.focus * 20;
+				ths.loadStartData();
+			});
+		}
 	},
 	/* Compute the max width and height of the data inside the
 	 * canvas so we can block scrolling when going too far
@@ -576,12 +583,17 @@ NetworkCanvas.DataManager.prototype = {
 			this.data[commit.time] = commit;
 		}
 	},
-	loadStartData: function() {
+	loadStartData: function(data) {
 		var ths = this;
-		$.getJSON("network_data_chunk?nethash="+ths.meta.nethash, function(chunk) {
-			ths.parseDataChunk(chunk);
+		if (data) {
+			ths.parseDataChunk(data);
 			ths.canvas.draw();
-		});
+		} else {
+			$.getJSON("network_data_chunk?nethash="+ths.meta.nethash, function(chunk) {
+				ths.parseDataChunk(chunk);
+				ths.canvas.draw();
+			});
+		}
 	},
 	getCommit: function(i) {
 		var ths = this;
