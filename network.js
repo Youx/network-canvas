@@ -72,10 +72,6 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 	this.dotsMouseOver = [];	/* here we store the dots we can hover */
 	this.avatars = {};		/* we store images loaded from gravatars in there */
 
-	/* Initialize the data loader */
-	this.dataManager = new NetworkCanvas.DataManager(this);
-	this.dataManager.init();
-
 	this.drawLabels = true;
 
 	this.maxx = - this.width + (this.xoffset * 2);
@@ -92,6 +88,10 @@ NetworkCanvas = function(canvasid, width, height, names_width) {
 	/* Initialize keyboard handler */
 	this.keyboard = new NetworkCanvas.Keyboard(this);
 	this.keyboard.init();
+
+	/* Initialize the data loader */
+	this.dataManager = new NetworkCanvas.DataManager(this);
+	this.dataManager.init();
 };
 
 NetworkCanvas.prototype = {
